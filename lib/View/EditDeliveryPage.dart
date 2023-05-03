@@ -29,169 +29,414 @@ class _EditDeliveryPageState extends State<EditDeliveryPage> {
       body: SafeArea(
         child: SingleChildScrollView(
           child: Container(
-            // padding: EdgeInsets.symmetric(horizontal: 16),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                IconButton(
-                  icon: Icon(Icons.arrow_back,color: Colors.white,),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                ),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16),
-                  child:
-                  Text(
-                    'Nifty',
-                    style: TextStyle(
-                      fontSize: 26.0,
-                      letterSpacing: 5,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  // Image.asset('assets/logo.png'),
-                ),
-                SizedBox(height: 16.0),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: Text(
-                    'Edit Delivery',
-                    style: TextStyle(
-                      fontSize: 24.0,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white
-                    ),
-                  ),
-                ),
-                SizedBox(height: 16.0),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: Text(
-                    'Order ID: 12345',
-                    style: TextStyle(fontWeight: FontWeight.bold,color: Colors.white),
-                  ),
-                ),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                mainAxisSize: MainAxisSize.max,
+                verticalDirection: VerticalDirection.down,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children:<Widget> [
+                  Container(
+                      // height: 50,
+                      // color: CommonColors.buttonColor,
+                      decoration: const BoxDecoration(
+                          borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                          color: Color(0xff25476a)
+                      ),
+                      margin: EdgeInsets.only(left: 15.0, top: 20.0, right: 15.0),
+                      padding: EdgeInsets.all(10.0),
+                      child:
+                      Row(
+                        children: [
+                          InkWell(
+                            onTap: () {
+                              Navigator.of(context).pop();
+                              },
+                            child: Image.asset("images/back_icon.png",
+                              height: 20.0,),
+                          ),
+                          Spacer(),
+                          Container(
+                            child: Image.asset("images/delivery_image.png",
+                              height: 40.0,),
+                          ),
 
-                SizedBox(height: 16.0),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Add Bag',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18.0,
-                          color: Colors.white,
+                          Spacer(),
+                          Image.asset("images/manu.png",
+                            height: 20.0,),
+                        ],
+                      )
+                    // Image.asset('assets/logo.png'),
+                  ),
+                  SizedBox(height: 16.0),
+                  Container(
+                    margin: EdgeInsets.symmetric(horizontal: 10.0),
+                    child: Card(
+                      elevation: 5,
+                      child: Container(
+                        padding: EdgeInsets.all(10.0),
+                        child: Column(
+                          children: [
+                            Row(
+                              children: [
+                                Image.asset("images/person.png",
+                                height: 15.0,),
+                                SizedBox(width: 6.0),
+                                Text("Order",
+                                style: TextStyle(fontWeight: FontWeight.w600),),
+                                Spacer(),
+                                Text("1234567809",
+                                    style: TextStyle(fontWeight: FontWeight.w400))
+                              ],
+                            ),
+                            SizedBox(height: 10,),
+                            Row(
+                              children: [
+                                Image.asset("images/bag.png",
+                                height: 15.0,),
+                                SizedBox(width: 6.0),
+                                Text("Bag",
+                                style: TextStyle(fontWeight: FontWeight.w600),),
+                                Spacer(),
+                                Text("A1",style: TextStyle(
+                                    fontWeight: FontWeight.w400
+                                ),)
+                              ],
+                            ),
+                            SizedBox(height: 10,),
+                            Container(
+                              alignment: Alignment.bottomCenter,
+                              decoration: const BoxDecoration(
+                                  borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                                  color: Color(0xff25476a)
+                              ),
+                              // child: _isPageLoading ? Center(
+                              //   child: CircularProgressIndicator(),
+                              // ):
+                              child: ButtonTheme(
+                                minWidth: MediaQuery.of(context).size.width,
+                                height: 40,
+                                child: MaterialButton(
+                                  highlightColor: Colors.transparent,
+                                  splashColor: Colors.transparent,
+                                  onPressed: () {
+
+                                  },
+                                  textColor: Colors.white,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(10.0),
+                                    child: Text('Add Bag', style: TextStyle(fontWeight: FontWeight.w600),),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      SizedBox(width: 16.0),
-                      Container(
-                        width: 60.0,
-                        height: 60.0,
-                        child: Icon(Icons.qr_code_2_rounded,size: 60,color:Colors.white)
-                        // Image.asset('assets/qr_code.png'),
-                      ),
-                    ],
+                    ),
                   ),
-                ),
-                SizedBox(height: 16.0),
-                Container(
-                  // padding: EdgeInsets.symmetric(horizontal: ),
-
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10)
-                  ),
-                  child: DataTable(
-                    columnSpacing:45,
-                    columns: [
-                      DataColumn(label: Text('Cash',style: TextStyle(color: Colors.black),)),
-                      DataColumn(label: Text('Denomination',style: TextStyle(color: Colors.black))),
-                      DataColumn(label: Text('Count',style: TextStyle(color: Colors.black))),
-                      DataColumn(label: Text('Amount',style: TextStyle(color: Colors.black))),
-                    ],
-                    rows: _cashDetails.map((detail) {
-                      return DataRow(
-                        cells: [
-                          DataCell(Text('')),
-                          DataCell(Text('\$${detail['denomination']}',style: TextStyle(color: Colors.black54))),
-                          DataCell(Text('${detail['count']}',style: TextStyle(color: Colors.black54))),
-                          DataCell(Text('\$${detail['amount']}',style: TextStyle(color: Colors.black54))),
+                  SizedBox(height: 16.0),
+                  Container(
+                    margin: EdgeInsets.symmetric(horizontal: 10.0),
+                    child: Card(
+                      elevation: 5,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            margin: EdgeInsets.all(10.0),
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: Color(0xffABAAB0),
+                                width: 1.0),
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(10.0)
+                              )
+                            ),
+                            padding: EdgeInsets.all(10.0),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  child: Text("Cash",
+                                  style: TextStyle(fontWeight: FontWeight.w600),),
+                                ),
+                                SizedBox(height: 5,),
+                                Container(
+                                  width: MediaQuery.of(context).size.width,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color: Color(0xffF1F0F6),
+                                    borderRadius: BorderRadius.all(
+                                      Radius.circular(8.0)
+                                    )
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            margin: EdgeInsets.all(10.0),
+                            decoration: BoxDecoration(
+                                border: Border.all(
+                                    color: Color(0xffABAAB0),
+                                    width: 1.0),
+                                borderRadius: BorderRadius.all(
+                                    Radius.circular(10.0)
+                                )
+                            ),
+                            padding: EdgeInsets.all(10.0),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  child: Text("Denomination",
+                                    style: TextStyle(fontWeight: FontWeight.w600),),
+                                ),
+                                SizedBox(height: 5,),
+                                Container(
+                                  width: MediaQuery.of(context).size.width,
+                                  height: 40,
+                                  alignment: Alignment.centerLeft,
+                                  padding: EdgeInsets.symmetric(horizontal: 10.0),
+                                  decoration: BoxDecoration(
+                                      color: Color(0xffF1F0F6),
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(8.0)
+                                      )
+                                  ),
+                                  child: Text("500", style: TextStyle(
+                                      fontWeight: FontWeight.w400
+                                  ),),
+                                ),
+                                SizedBox(height: 5,),
+                                Container(
+                                  width: MediaQuery.of(context).size.width,
+                                  height: 40,
+                                  alignment: Alignment.centerLeft,
+                                  padding: EdgeInsets.symmetric(horizontal: 10.0),
+                                  decoration: BoxDecoration(
+                                      color: Color(0xffF1F0F6),
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(8.0)
+                                      )
+                                  ),
+                                  child: Text("200", style: TextStyle(
+                                      fontWeight: FontWeight.w400
+                                  ),),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            margin: EdgeInsets.all(10.0),
+                            decoration: BoxDecoration(
+                                border: Border.all(
+                                    color: Color(0xffABAAB0),
+                                    width: 1.0),
+                                borderRadius: BorderRadius.all(
+                                    Radius.circular(10.0)
+                                )
+                            ),
+                            padding: EdgeInsets.all(10.0),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  child: Text("Count",
+                                    style: TextStyle(fontWeight: FontWeight.w600),),
+                                ),
+                                SizedBox(height: 5,),
+                                Container(
+                                  width: MediaQuery.of(context).size.width,
+                                  height: 40,
+                                  alignment: Alignment.centerLeft,
+                                  padding: EdgeInsets.symmetric(horizontal: 10.0),
+                                  decoration: BoxDecoration(
+                                      color: Color(0xffF1F0F6),
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(8.0)
+                                      )
+                                  ),
+                                  child: Text("100", style: TextStyle(
+                                      fontWeight: FontWeight.w400
+                                  ),),
+                                ),
+                                SizedBox(height: 5,),
+                                Container(
+                                  width: MediaQuery.of(context).size.width,
+                                  height: 40,
+                                  alignment: Alignment.centerLeft,
+                                  padding: EdgeInsets.symmetric(horizontal: 10.0),
+                                  decoration: BoxDecoration(
+                                      color: Color(0xffF1F0F6),
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(8.0)
+                                      )
+                                  ),
+                                  child: Text("100", style: TextStyle(
+                                      fontWeight: FontWeight.w400
+                                  ),),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            alignment: Alignment.centerRight,
+                            child: Container(
+                              margin: EdgeInsets.all(10.0),
+                              width: 200,
+                              height: 45,
+                              alignment: Alignment.centerRight,
+                              decoration: const BoxDecoration(
+                                  borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                                  color: Color(0xff25476a)
+                              ),
+                              // child: _isPageLoading ? Center(
+                              //   child: CircularProgressIndicator(),
+                              // ):
+                              child: ButtonTheme(
+                                minWidth: 200,
+                                height: 40,
+                                child: MaterialButton(
+                                  highlightColor: Colors.transparent,
+                                  splashColor: Colors.transparent,
+                                  onPressed: () {
+                                    // if (_formKey.currentState!.validate()) {
+                                    //   _formKey.currentState!.save();
+                                    //   Navigator.push(context,
+                                    //     MaterialPageRoute(builder: (context) => HomePage()),
+                                    //   );
+                                    // }
+                                  },
+                                  textColor: Colors.white,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(10.0),
+                                    child: Text('Add More', style: TextStyle(fontWeight: FontWeight.w600),),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Container(
+                            margin: EdgeInsets.all(10.0),
+                            decoration: BoxDecoration(
+                                border: Border.all(
+                                    color: Color(0xffABAAB0),
+                                    width: 1.0),
+                                borderRadius: BorderRadius.all(
+                                    Radius.circular(10.0)
+                                )
+                            ),
+                            padding: EdgeInsets.all(10.0),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  child: Text("Amount",
+                                    style: TextStyle(fontWeight: FontWeight.w600),),
+                                ),
+                                SizedBox(height: 5,),
+                                Container(
+                                  width: MediaQuery.of(context).size.width,
+                                  height: 40,
+                                  alignment: Alignment.centerLeft,
+                                  padding: EdgeInsets.symmetric(horizontal: 10.0),
+                                  decoration: BoxDecoration(
+                                      color: Color(0xffF1F0F6),
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(8.0)
+                                      )
+                                  ),
+                                  child: Text("50000", style: TextStyle(
+                                      fontWeight: FontWeight.w400
+                                  ),),
+                                ),
+                                SizedBox(height: 5,),
+                                Container(
+                                  width: MediaQuery.of(context).size.width,
+                                  height: 40,
+                                  alignment: Alignment.centerLeft,
+                                  padding: EdgeInsets.symmetric(horizontal: 10.0),
+                                  decoration: BoxDecoration(
+                                      color: Color(0xffF1F0F6),
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(8.0)
+                                      )
+                                  ),
+                                  child: Text("20000", style: TextStyle(
+                                      fontWeight: FontWeight.w400
+                                  ),),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            width: MediaQuery.of(context).size.width,
+                            height: 40,
+                            margin: EdgeInsets.all(10.0),
+                            alignment: Alignment.centerLeft,
+                            padding: EdgeInsets.symmetric(horizontal: 10.0),
+                            decoration: BoxDecoration(
+                                color: Color(0xffF1F0F6),
+                                borderRadius: BorderRadius.all(
+                                    Radius.circular(8.0)
+                                )
+                            ),
+                            child: Row(
+                              children: [
+                                Text("70000", style: TextStyle(
+                                    fontWeight: FontWeight.w400
+                                ),),
+                                Spacer(),
+                                Text("Total", style: TextStyle(
+                                    fontWeight: FontWeight.w600
+                                ),),
+                              ],
+                            ),
+                          ),
                         ],
-                      );
-                    }).toList(),
-                  ),
-                ),
-                SizedBox(height: 16.0),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: Align(
-                    alignment: Alignment.centerRight,
-                    child: ElevatedButton(
-                      style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all<Color>(Color(0xff3eaaf5)),
                       ),
-                      onPressed: _addCashDetail,
-                      child: Text('Add More'),
                     ),
                   ),
-                ),
-
-                SizedBox(height: 16.0),
-            Container(
-              decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10)
-              ),
-              padding: EdgeInsets.symmetric(horizontal: 16,vertical: 10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Total:',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18.0,
-                      color: Colors.black
+                  SizedBox(height: 10,),
+                    Container(
+                      margin: EdgeInsets.only(left: 10.0, right: 10.0, bottom: 20.0),
+                      alignment: Alignment.bottomCenter,
+                      decoration: const BoxDecoration(
+                          borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                          color: Color(0xff25476a)
+                      ),
+                      // child: _isPageLoading ? Center(
+                      //   child: CircularProgressIndicator(),
+                      // ):
+                      child: ButtonTheme(
+                        minWidth: MediaQuery.of(context).size.width,
+                        height: 40,
+                        child: MaterialButton(
+                          highlightColor: Colors.transparent,
+                          splashColor: Colors.transparent,
+                          onPressed: () {
+                           Navigator.of(context).push(MaterialPageRoute(
+                               builder: (context) => DeliveryViewPage(bagValue: "bagValue", totalValue: "totalValue")
+                           ));
+                          },
+                          textColor: Colors.white,
+                          child: Padding(
+                            padding: const EdgeInsets.all(10.0),
+                            child: Text('Next', style: TextStyle(fontWeight: FontWeight.w600),),
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                  Text(
-                    '\$${calculateTotalAmount(_cashDetails).toInt()}',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18.0,
-                        color: Colors.black
-                    ),
-                  ),
                 ],
               ),
-            ),
-                SizedBox(height: 16.0),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: Align(
-                    alignment: Alignment.centerRight,
-                    child: ElevatedButton(
-                      style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all<Color>(Color(0xff3eaaf5)),
-                      ),
-                      onPressed: (){
-
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => DeliveryViewPage(bagValue: "A1", totalValue: '\$${calculateTotalAmount(_cashDetails).toInt()}')),
-                        );
-                      },
-                      child: Text('Next'),
-                    ),
-                  ),
-                ),
-              ],
             ),
           ),
         ),
