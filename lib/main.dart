@@ -3,6 +3,7 @@ import 'package:delivery_app/Models/LoginModel.dart';
 import 'package:delivery_app/Services/Services.dart';
 import 'package:delivery_app/View/HomePage.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 void main() {
   runApp(MyApp());
@@ -34,16 +35,27 @@ class _HomeState extends State<Home> {
   late String _email;
   late String _password;
   late LoginModel _loginModel;
+  bool _isPageLoading = false;
   TextEditingController email = TextEditingController();
   TextEditingController password = TextEditingController();
 
   Future<void> Login() async{
+    _isPageLoading = true;
     _loginModel = await Service.LoginCredentials(email.text, password.text);
 
     if(_loginModel.status == true){
+      _isPageLoading = false;
+      Fluttertoast.showToast(
+          msg: _loginModel.msg.toString(),
+          toastLength: Toast.LENGTH_SHORT);
+
       Navigator.of(context).push(
           MaterialPageRoute(builder: (context) => HomePage()));
     }else{
+      _isPageLoading = false;
+      Fluttertoast.showToast(
+          msg: _loginModel.msg.toString(),
+          toastLength: Toast.LENGTH_SHORT);
       print("objectdjsh"+ _loginModel.msg.toString());
     }
   }
@@ -189,17 +201,21 @@ class _HomeState extends State<Home> {
                           child: MaterialButton(
                             highlightColor: Colors.transparent,
                             splashColor: Colors.transparent,
+                            textColor: Colors.white,
+                            child: Padding(
+                              padding: const EdgeInsets.all(10.0),
+                              child: _isPageLoading == true ? Center(
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                ),
+                              ):Text('Login', style: TextStyle(fontSize: 18,),),
+                            ),
                             onPressed: () {
                               if (_formKey.currentState!.validate()) {
                                 _formKey.currentState!.save();
                                 Login();
                               }
                             },
-                            textColor: Colors.white,
-                            child: Padding(
-                              padding: const EdgeInsets.all(10.0),
-                              child: Text('Login', style: TextStyle(fontSize: 18,),),
-                            ),
                           ),
                         ),
                       ),
