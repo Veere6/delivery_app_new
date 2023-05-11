@@ -17,7 +17,7 @@ String getBagModelToJson(GetBagModel data) {
 class GetBagModel {
   bool? status;
   String? msg;
-  List<Body>? body;
+  List<BagBody>? body;
 
   GetBagModel({
     this.status,
@@ -28,7 +28,7 @@ class GetBagModel {
   factory GetBagModel.fromJson(Map<String, dynamic> json) => new GetBagModel(
     status: json["status"],
     msg: json["msg"],
-    body: new List<Body>.from(json["body"].map((x) => Body.fromJson(x))),
+    body: json["body"].toString()=="" ? null : new List<BagBody>.from(json["body"].map((x) => BagBody.fromJson(x))),
   );
 
   Map<String, dynamic> toJson() => {
@@ -38,7 +38,7 @@ class GetBagModel {
   };
 }
 
-class Body {
+class BagBody {
   String? bagLogId;
   String? orderId;
   String? bagId;
@@ -50,7 +50,7 @@ class Body {
   String? bagName;
   String? bageCode;
 
-  Body({
+  BagBody({
     this.bagLogId,
     this.orderId,
     this.bagId,
@@ -63,7 +63,7 @@ class Body {
     this.bageCode,
   });
 
-  factory Body.fromJson(Map<String, dynamic> json) => new Body(
+  factory BagBody.fromJson(Map<String, dynamic> json) => new BagBody(
     bagLogId: json["bag_log_id"],
     orderId: json["order_id"],
     bagId: json["bag_id"],

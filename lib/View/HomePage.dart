@@ -3,8 +3,6 @@ import 'package:delivery_app/Models/OrderListModel.dart';
 import 'package:delivery_app/Services/Services.dart';
 import 'package:delivery_app/View/EditDeliveryPage.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
 
 class HomePage extends StatefulWidget {
   @override
@@ -30,6 +28,10 @@ class _MyStatefulWidgetPageState extends State<HomePage> {
       });
     }
   }
+
+
+
+
 
   @override
   void initState(){
@@ -110,8 +112,8 @@ class _MyStatefulWidgetPageState extends State<HomePage> {
                         elevation: 8.0,
                         shadowColor: Colors.black,
                         child: Container(
-                        width: MediaQuery.of(context).size.width,
-                        height: 150,
+                        // width: MediaQuery.of(context).size.width,
+                        // height: 150,
                         decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(10.0),
                         color: Colors.white
