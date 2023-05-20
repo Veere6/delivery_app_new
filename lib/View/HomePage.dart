@@ -3,6 +3,7 @@ import 'package:delivery_app/Models/OrderListModel.dart';
 import 'package:delivery_app/Services/Services.dart';
 import 'package:delivery_app/View/EditDeliveryPage.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -15,20 +16,28 @@ class _MyStatefulWidgetPageState extends State<HomePage> {
   late OrderListModel _orderListModel;
   bool _isPageLoading = false;
 
-
+  late SharedPreferences preferences;
   Future<void> GetOrderList() async {
     _isPageLoading = true;
-    _orderListModel = await Service.DeliveryOrderList("6");
+    preferences = await SharedPreferences.getInstance();
+    String user_id = preferences.getString("user_id") ?? "";
+    _orderListModel = await Service.DeliveryOrderList("$user_id");
     if(_orderListModel.status == true){
-      setState(() {
+
         _isPageLoading = false;
         for(int i=0; i<_orderListModel.body!.length; i++){
           _orderList = _orderListModel.body ?? <Body> [];
         }
-      });
+
     }
+  setState(() {
+    _isPageLoading = false;
+  });
   }
 
+  void logOut() async {
+    preferences.clear();
+  }
 
 
 
@@ -73,8 +82,13 @@ class _MyStatefulWidgetPageState extends State<HomePage> {
                         ),
 
                         Spacer(),
-                        Image.asset("images/manu.png",
-                        height: 20.0,),
+                        InkWell(
+                          onTap: (){
+                            logOut();
+                          },
+                          child: Image.asset("images/manu.png",
+                          height: 20.0,),
+                        ),
                       ],
                     )
                     // Image.asset('assets/logo.png'),
@@ -96,7 +110,7 @@ class _MyStatefulWidgetPageState extends State<HomePage> {
                     child: CircularProgressIndicator(
                       color: Color(0xff25476A),
                     ),
-                  ):ListView.builder(
+                  ): _orderList.isNotEmpty ? ListView.builder(
                     shrinkWrap: true,
                       itemCount: _orderList.length,
                       scrollDirection: Axis.vertical,
@@ -128,27 +142,25 @@ class _MyStatefulWidgetPageState extends State<HomePage> {
                                     children: [
                                       Container(
                                         margin: EdgeInsets.only(left: 10.0, top: 10.0, right: 10.0),
-                                        child: Image.asset("images/person.png",
-                                        height: 15.0,),
+                                        child: Icon(Icons.bookmark_border)
                                       ),
                                       Container(
                                         margin: EdgeInsets.only(top: 10.0,),
-                                        child: Text(body.orderId.toString(),
+                                        child: Text( "Order ID: #${body.orderId.toString()}",
                                           style: TextStyle(fontWeight: FontWeight.w600),
                                         ),
-                                      )
+                                      ),
                                     ],
                                   ),
                                   Row(
                                     children: [
                                       Container(
                                         margin: EdgeInsets.only(left: 10.0, top: 10.0, right: 10.0),
-                                        child: Image.asset("images/location.png",
-                                        height: 15.0,),
+                                        child: Icon(Icons.monetization_on_outlined)
                                       ),
                                       Container(
                                         margin: EdgeInsets.only(top: 10.0,),
-                                        child: Text("Location",
+                                        child: Text("Amount: ${body.amount.toString()}",
                                           style: TextStyle(fontWeight: FontWeight.w400),
                                         ),
                                       )
@@ -158,12 +170,36 @@ class _MyStatefulWidgetPageState extends State<HomePage> {
                                     children: [
                                       Container(
                                         margin: EdgeInsets.only(left: 10.0, top: 10.0, right: 10.0),
-                                        child: Image.asset("images/bag.png",
-                                        height: 15.0,),
+                                        child: Icon(Icons.date_range_rounded)
                                       ),
                                       Container(
                                         margin: EdgeInsets.only(top: 10.0,),
-                                        child: Text("Bag",
+                                        child: Text("Date: ${body.dateTime.toString()}",
+                                          style: TextStyle(fontWeight: FontWeight.w400),
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                  Row(
+                                    children: [
+                                      Container(
+                                          margin: EdgeInsets.only(left: 10.0, top: 10.0, right: 10.0),
+                                          child: Icon(Icons.menu)
+                                      ),
+                                      Container(
+                                        margin: EdgeInsets.only(top: 10.0,),
+                                        child: Text( "Status: ",
+                                          style: TextStyle(fontWeight: FontWeight.w400),
+                                        ),
+                                      ),
+                                      Container(
+                                        margin: EdgeInsets.only(top: 10.0,),
+                                        child: Text("${body.status=="1" ? "Pending":
+                                        body.status=="2" ? "Accepted":
+                                        body.status=="3" ? "Processing":
+                                        body.status=="4" ? "Picked-Up":
+                                        body.status=="5" ? "Complete": "Zone Delivery Complete"
+                                        }",
                                           style: TextStyle(fontWeight: FontWeight.w400),
                                         ),
                                       )
@@ -172,28 +208,33 @@ class _MyStatefulWidgetPageState extends State<HomePage> {
                                   SizedBox(height: 10.0,),
                                   Row(
                                     children: [
-                                      Container(
-                                        margin: EdgeInsets.all(10),
-                                        padding: EdgeInsets.all(10),
-                                        alignment: Alignment.center,
-                                        decoration: BoxDecoration(
-                                            color: Colors.white,
-                                            border: Border.all(
-                                              color: CommonColors.buttonColor,
-                                                width: 2.0),
-                                            borderRadius: BorderRadius.all(
-                                                Radius.circular(10.0)),
+                                      InkWell(
+                                        onTap: (){
+                                          Navigator.of(context).push(MaterialPageRoute(
+                                              builder: (context) => EditDeliveryPage(body.orderId.toString(), body.amount.toString(),body.status.toString()))
+                                          );
+                                        },
+                                        child: Container(
+                                          margin: EdgeInsets.all(10),
+                                          padding: EdgeInsets.all(10),
+                                          alignment: Alignment.center,
+                                          decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              border: Border.all(
+                                                color: CommonColors.buttonColor,
+                                                  width: 2.0),
+                                              borderRadius: BorderRadius.all(
+                                                  Radius.circular(10.0)),
+                                          ),
+                                          child: Text("Set Order For Delivery",
+                                          style: TextStyle(color: CommonColors.buttonColor,
+                                           fontWeight: FontWeight.w600,
+                                          ),),
                                         ),
-                                        child: Text("Set Order For Delivery",
-                                        style: TextStyle(color: CommonColors.buttonColor,
-                                         fontWeight: FontWeight.w600,
-                                        ),),
                                       ),
                                       InkWell(
                                         onTap: () {
-                                          Navigator.of(context).push(MaterialPageRoute(
-                                              builder: (context) => EditDeliveryPage(body.orderId.toString(), body.amount.toString()))
-                                          );
+
                                         },
                                         child: Container(
                                           width: 130,
@@ -221,6 +262,8 @@ class _MyStatefulWidgetPageState extends State<HomePage> {
                           )
                         );
                       }
+                  ):Center(
+                    child: Text("No Deliveries Found"),
                   ),
                   // SizedBox(height: 16.0),
                   // Row(

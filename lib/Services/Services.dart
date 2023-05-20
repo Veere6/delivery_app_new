@@ -2,6 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:delivery_app/Models/AddBagAmountModel.dart';
+import 'package:delivery_app/Models/BagDetail.dart';
+import 'package:delivery_app/Models/CommonModel.dart';
+import 'package:delivery_app/Models/GetBagAmountModel.dart';
 import 'package:delivery_app/Models/GetBagModel.dart';
 
 import '../Models/LoginModel.dart';
@@ -42,8 +45,7 @@ class Service {
   static Future<OrderListModel> DeliveryOrderList(String deliveryBoyId) async {
     final params = {"flag": "order_list", "delivery_boy_id": deliveryBoyId};
     print("OrderListParams" + params.toString());
-    http.Response response =
-        await http.post(Uri.parse(OrderList), body: params);
+    http.Response response = await http.post(Uri.parse(OrderList), body: params);
     print("OrderListResponse" + response.body);
 
     if (response.statusCode == 200) {
@@ -58,8 +60,7 @@ class Service {
 
   static Future<GetBagModel> BagList(
     String deliveryBoyId,
-    String order_id,
-  ) async {
+    String order_id,) async {
     final params = {
       "flag": "get_bags_by_order_id",
       "delivery_boy_id": deliveryBoyId,
@@ -72,6 +73,67 @@ class Service {
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
       GetBagModel user = GetBagModel.fromJson(data);
+      return user;
+    } else {
+      print("GetBagError " + response.body);
+      throw Exception('Failed');
+    }
+  }
+  static Future<BagDetail> BagDetailAPi(
+    String bag_id) async {
+    final params = {
+      "flag": "get_bag",
+      "bag_id": bag_id
+    };
+    print("GetBagParamsdetail" + params.toString());
+    http.Response response = await http.post(Uri.parse(GetBag), body: params);
+    print("GetBagParamsdetail" + response.body);
+
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      BagDetail user = BagDetail.fromJson(data);
+      return user;
+    } else {
+      print("GetBagError " + response.body);
+      throw Exception('Failed');
+    }
+  }
+  static Future<GetBagAmountModel> order_amount_by_bag(
+    String deliveryBoyId,
+    String order_id,) async {
+    final params = {
+      "flag": "order_amount_by_bag",
+      "delivery_boy_id": deliveryBoyId,
+      "order_id": order_id
+    };
+    print("GetBagParams" + params.toString());
+    http.Response response = await http.post(Uri.parse(GetBag), body: params);
+    print("GetBagResponse" + response.body);
+
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      GetBagAmountModel user = GetBagAmountModel.fromJson(data);
+      return user;
+    } else {
+      print("GetBagError " + response.body);
+      throw Exception('Failed');
+    }
+  }
+  static Future<CommonModel> delete_bag_amount(
+    String bag_log_id,
+    String bag_id) async {
+    final params = {
+      "flag": "delete_bag_amount",
+      "bag_log_id": bag_log_id,
+      "bag_id": bag_id
+    };
+    print("GetBagParams" + params.toString());
+    http.Response response = await http.post(Uri.parse(GetBag), body: params);
+    print("GetBagResponse" + response.body);
+
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      CommonModel user = CommonModel.fromJson(data);
       return user;
     } else {
       print("GetBagError " + response.body);
@@ -115,8 +177,9 @@ class Service {
     request.fields['flag'] = "order_delivered";
     request.fields['delivery_boy_id'] = deliveryBoyId;
     request.fields['order_id'] = order_id;
+    request.fields['status'] = "4";
 
-    print("objectasdasds ${request.fields}");
+    // print("objectasdasds ${request.fields}");
 
     var custImage = await http.MultipartFile.fromPath('image', image.path);
     request.files.add(custImage);
@@ -125,7 +188,7 @@ class Service {
     var response2 = await http.Response.fromStream(response);
 
     print(response.toString());
-    print("OrderDeliver " + response2.body);
+    // print("OrderDeliver " + response2.body);
 
     if (response2.statusCode == 200) {
       var data = json.decode(response2.body);

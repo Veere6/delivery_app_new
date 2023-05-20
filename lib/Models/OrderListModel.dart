@@ -28,7 +28,7 @@ class OrderListModel {
   factory OrderListModel.fromJson(Map<String, dynamic> json) => new OrderListModel(
     status: json["status"],
     msg: json["msg"],
-    body: new List<Body>.from(json["body"].map((x) => Body.fromJson(x))),
+    body: json["body"]=="" ? null : new List<Body>.from(json["body"].map((x) => Body.fromJson(x))),
   );
 
   Map<String, dynamic> toJson() => {

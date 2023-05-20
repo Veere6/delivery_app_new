@@ -37,6 +37,8 @@ dependencies:
   cupertino_icons: ^1.0.2
   http: ^0.13.6
   geolocator: ^9.0.2
+  geocoding: ^2.1.0
+  intl: ^0.18.1
   flutter_background_service: ^2.4.6
   flutter_local_notifications: ^14.0.0+1
   device_info_plus: ^9.0.0

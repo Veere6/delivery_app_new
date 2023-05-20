@@ -221,6 +221,8 @@ class _HomeState extends State<Home> {
     if(_loginModel.status == true){
       _isPageLoading = false;
       preferences.setBool("islogin", true);
+      preferences.setString("user_id",_loginModel.body?.userId ?? "0");
+      preferences.setString("name",_loginModel.body?.name ?? "dummy");
       Fluttertoast.showToast(
           msg: _loginModel.msg.toString(),
           toastLength: Toast.LENGTH_SHORT);

@@ -1,18 +1,23 @@
 import 'package:delivery_app/Models/OrderDeliverModel.dart';
 import 'package:delivery_app/Services/Services.dart';
+import 'package:delivery_app/View/HomePage.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 import 'dart:async';
 import 'dart:io';
 
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 
 class DeliveryViewPage extends StatefulWidget {
   final String bagValue;
   final String totalValue;
   String orderId = "";
+  String user_id;
 
-  DeliveryViewPage({required this.bagValue, required this.totalValue, required this.orderId});
+  DeliveryViewPage({required this.bagValue, required this.totalValue, required this.orderId,required this.user_id});
   @override
   _DeliveryState createState() => _DeliveryState();
 }
@@ -44,16 +49,62 @@ class _DeliveryState extends State<DeliveryViewPage> {
   }
 
   Future<void> OrderDeliver() async {
-    _orderDeliverModel = await Service.OrderDeliver("6", widget.orderId, _documentImage!);
+    _orderDeliverModel = await Service.OrderDeliver("${widget.user_id}", widget.orderId, _documentImage!);
 
     if(_orderDeliverModel.status == true){
+
       Fluttertoast.showToast(msg: _orderDeliverModel.msg.toString(),
           toastLength: Toast.LENGTH_SHORT);
+      Navigator.pushAndRemoveUntil<dynamic>(
+        context,
+        MaterialPageRoute<dynamic>(
+          builder: (BuildContext context) => HomePage(),
+        ),
+            (route) => false,//if you want to disable back feature set to false
+      );
     }else {
       Fluttertoast.showToast(msg: _orderDeliverModel.msg.toString(),
           toastLength: Toast.LENGTH_SHORT);
 
     }
+  }
+
+
+  @override
+  void initState() {
+    initBackgroundFetch();
+  }
+
+  void initBackgroundFetch() {
+    setState((){
+      _currentAddress= "Loading...";
+    });
+    Geolocator.checkPermission().then((permission)async {
+      if (permission == LocationPermission.always || permission == LocationPermission.whileInUse) {
+        final currentLocation = await Geolocator.getCurrentPosition();
+        _getAddressFromLatLng(currentLocation);
+      }
+    });
+  }
+  String _currentAddress = "";
+  Future<void> _getAddressFromLatLng(Position position) async {
+    await placemarkFromCoordinates(
+        position!.latitude, position!.longitude)
+        .then((List<Placemark> placemarks) {
+      Placemark place = placemarks[0];
+      setState(() {
+        _currentAddress =
+        "${place.street}, ${place.subLocality}, ${place.subAdministrativeArea}, ${place.postalCode}";
+      });
+      print(_currentAddress);
+    }).catchError((e) {
+      if(mounted) {
+        setState(() {
+          _currentAddress = "Failed";
+        });
+        print(e);
+      }
+    });
   }
 
   @override
@@ -129,7 +180,7 @@ class _DeliveryState extends State<DeliveryViewPage> {
                                     Text("Bag",
                                       style: TextStyle(fontWeight: FontWeight.w600),),
                                     Spacer(),
-                                    Text("A1",style: TextStyle(
+                                    Text("${widget.bagValue}",style: TextStyle(
                                     ),)
                                   ],
                                 ),
@@ -149,7 +200,7 @@ class _DeliveryState extends State<DeliveryViewPage> {
                                     Text("Total",
                                       style: TextStyle(fontWeight: FontWeight.w600),),
                                     Spacer(),
-                                    Text("70000",style: TextStyle(
+                                    Text("${widget.totalValue}",style: TextStyle(
                                     ),)
                                   ],
                                 ),
@@ -165,7 +216,8 @@ class _DeliveryState extends State<DeliveryViewPage> {
                                 decoration: BoxDecoration(
                                     image: DecorationImage(
                                         image: AssetImage("images/background_img.png"),
-                                        fit: BoxFit.cover),
+                                        fit: BoxFit.cover
+                                    ),
                                     borderRadius: BorderRadius.all(
                                         Radius.circular(8.0)
                                     )
@@ -207,26 +259,31 @@ class _DeliveryState extends State<DeliveryViewPage> {
                                 ),
                               ),
                               SizedBox(height: 20,),
-                              Container(
-                                height: 40,
-                                padding: EdgeInsets.all(10.0),
-                                decoration: BoxDecoration(
-                                    color: Color(0xffF1F0F6),
-                                    borderRadius: BorderRadius.all(
-                                        Radius.circular(8.0)
-                                    )
-                                ),
-                                child: Row(
-                                  children: [
-                                    Image.asset("images/location.png",
-                                      height: 15.0,),
-                                    SizedBox(width: 10.0),
-                                    Text("Location",
-                                      style: TextStyle(fontWeight: FontWeight.w600),),
-                                    Spacer(),
-                                    Text("",style: TextStyle(
-                                    ),)
-                                  ],
+                              InkWell(
+                                onTap: (){
+                                  initBackgroundFetch();
+                                },
+                                child: Container(
+                                  height: 40,
+                                  padding: EdgeInsets.all(10.0),
+                                  decoration: BoxDecoration(
+                                      color: Color(0xffF1F0F6),
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(8.0)
+                                      )
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Image.asset("images/location.png",
+                                        height: 15.0,),
+                                      SizedBox(width: 10.0),
+                                      Text("Location",
+                                        style: TextStyle(fontWeight: FontWeight.w600),),
+                                      Spacer(),
+                                      Text("$_currentAddress",style: TextStyle(
+                                      ),)
+                                    ],
+                                  ),
                                 ),
                               ),
                               SizedBox(height: 10,),
@@ -247,7 +304,7 @@ class _DeliveryState extends State<DeliveryViewPage> {
                                     Text("Date",
                                       style: TextStyle(fontWeight: FontWeight.w600),),
                                     Spacer(),
-                                    Text("28-04-2023",style: TextStyle(
+                                    Text("${DateFormat('dd-MM-yyyy').format(DateTime.now())}",style: TextStyle(
                                     ),)
                                   ],
                                 ),
@@ -270,7 +327,7 @@ class _DeliveryState extends State<DeliveryViewPage> {
                                     Text("Time",
                                       style: TextStyle(fontWeight: FontWeight.w600),),
                                     Spacer(),
-                                    Text("18:23",style: TextStyle(
+                                    Text("${DateFormat('kk:mm a').format(DateTime.now())}",style: TextStyle(
                                     ),)
                                   ],
                                 ),
@@ -293,7 +350,7 @@ class _DeliveryState extends State<DeliveryViewPage> {
                                     Text("Cash Box",
                                       style: TextStyle(fontWeight: FontWeight.w600),),
                                     Spacer(),
-                                    Text("#2334",style: TextStyle(
+                                    Text("#${widget.orderId}",style: TextStyle(
                                     ),)
                                   ],
                                 ),

@@ -1,10 +1,9 @@
-import 'dart:developer';
-import 'dart:ffi';
-import 'dart:io';
-
+import 'dart:convert';
 import 'package:delivery_app/Models/AddBagAmountModel.dart';
-import 'package:delivery_app/Models/Bagsmodel.dart';
-import 'package:delivery_app/Models/GetBagModel.dart';
+import 'package:delivery_app/Models/BagDetail.dart';
+import 'package:delivery_app/Models/CommonModel.dart';
+import 'package:delivery_app/Models/GetBagAmountModel.dart';
+import 'package:delivery_app/Models/QrCodeDetail.dart';
 import 'package:delivery_app/View/DeliveryViewPage.dart';
 import 'package:flutter/material.dart';
 import 'package:delivery_app/Services/Services.dart';
@@ -16,17 +15,17 @@ import 'package:shared_preferences/shared_preferences.dart';
 class EditDeliveryPage extends StatefulWidget {
   String order_id = "";
   String amount = "";
+  String status = "";
 
-  EditDeliveryPage(this.order_id, this.amount);
+  EditDeliveryPage(this.order_id, this.amount,this.status);
 
   @override
   _EditDeliveryPageState createState() => _EditDeliveryPageState();
 }
 
 class _EditDeliveryPageState extends State<EditDeliveryPage> {
-  late GetBagModel _getBagModel;
+  late GetBagAmountModel _getBagModel;
   late AddtBagAmountModel _addtBagAmountModel;
-  SharedPreferences? _bagPreferences;
   List<String> denominationList = [
     'Select Denomination',
     '2000',
@@ -38,54 +37,41 @@ class _EditDeliveryPageState extends State<EditDeliveryPage> {
   String? selectedDenomination = 'Select Denomination';
   TextEditingController count = TextEditingController();
   List<String> noOfBags = [];
-  List<BagBody> _bag = [];
+  List<BagsBody> _bag = [];
   List<TextEditingController> _controllers = [];
   List<TextEditingController> _controllersamount = [];
   String barcodeScanRes = "";
-
+  late SharedPreferences preferences;
   Future<void> BagList() async {
-    // print("ahdffghdfjlsdhf ${_bagPreferences?.getStringList("_bagList")}");
-
+    _bag.clear();
     if (barcodeScanRes.isNotEmpty) {
-      _getBagModel = await Service.BagList("6", "5");
+      _getBagModel = await Service.order_amount_by_bag("$user_id", widget.order_id);
       if (_getBagModel.status == true) {
         setState(() {
           for (int i = 0; i < _getBagModel.body!.length; i++) {
-            _bag = _getBagModel.body ?? <BagBody>[];
+            _bag = _getBagModel.body ?? <BagsBody>[];
           }
         });
       }
     }
   }
 
-  @override
-  void dipose() {
-    _bagPreferences?.clear();
-  }
-
-  getAsync() async {
-    try {
-      _bagPreferences = await SharedPreferences.getInstance();
-      setState(() {});
-    } catch (e) {
-      print(e);
-    }
-  }
 
   Future<bool> AddBagAmount(
-      String count, String name, int position, String amount) async {
+      String count, String name, int position, String amount,String bag_id) async {
     _addtBagAmountModel = await Service.AddBagAmount(
-        "6", "1", selectedDenomination.toString(), count, widget.order_id);
+        "$user_id", bag_id, selectedDenomination.toString(), count, widget.order_id);
 
     if (_addtBagAmountModel.status == true) {
       Fluttertoast.showToast(
           msg: _addtBagAmountModel.msg.toString(),
           toastLength: Toast.LENGTH_SHORT);
-      _addCashDetail(
-          count, selectedDenomination.toString(), amount, name, position);
+      // _addCashDetail(
+      //     count, selectedDenomination.toString(), amount, name, position);
       // _addCashDetail(count);
       // print(_cashDetails);
       // print(_addtBagAmountModel.msg);
+      BagList();
       return true;
     } else {
       Fluttertoast.showToast(
@@ -99,43 +85,63 @@ class _EditDeliveryPageState extends State<EditDeliveryPage> {
 
   final List<String> _list = [];
 
-  void _addList(String bagname) {
-    setState(() {
-      bag_list.add(Bag(name: bagname, data: []));
+  void _addList(String bag_id) async{
 
-      // _list.add(barcodeScanRes);
+
+      // bag_list.add(Bag(name: bagname, data: []));
+     BagDetail _bagdetails = await Service.BagDetailAPi("$bag_id");
+
+     if(_bagdetails.status==true){
+     if(_bagdetails.body!=null) {
+       _bag.add(BagsBody(bagId: "${_bagdetails.body?[0].bagId}",
+           bagName: "${_bagdetails.body?[0].bagName}",
+           bageCode: "${_bagdetails.body?[0].bageCode}",
+           qrImage: "${_bagdetails.body?[0].qrImage}",
+           data: []));
+       // _list.add(barcodeScanRes);
+     }
+     }else{
+       Fluttertoast.showToast(msg: "${_bagdetails.msg}",gravity: ToastGravity.BOTTOM);
+     }
+     setState(() {
     });
   }
 
   // final List<Map<String, dynamic>> _cashDetails = [];
 
   // List<Datum> data=[];
-  List<Bag> bag_list = [];
+  // List<Bag> bag_list = [];
 
-  void _addCashDetail(String count, String denomination, String amount,
-      String name, int position) {
+  // void _addCashDetail(String count, String denomination, String amount,
+  //     String name, int position) {
+  //   // void _addCashDetail(String count) {
+  //   setState(() {
+  //     // print("Position ${position}");
+  //     bag_list[position].data?.add(
+  //         Datum(denomination: denomination, count: count, amount: amount));
+  //     selectedDenomination = 'Select Denomination';
+  //   });
+  // }
+
+  void _removeCashDetail(String bag_log_id,String bag_id) async {
     // void _addCashDetail(String count) {
-    setState(() {
-      // print("Position ${position}");
-      bag_list[position].data?.add(
-          Datum(denomination: denomination, count: count, amount: amount));
-      selectedDenomination = 'Select Denomination';
-    });
-  }
-  void _removeCashDetail(int position,int removeposition) {
-    // void _addCashDetail(String count) {
-    setState(() {
-      print("Position ${position}");
-      bag_list[position].data?.removeAt(removeposition);
-    });
+    CommonModel commonModel = await Service.delete_bag_amount(bag_log_id, bag_id);
+    if(commonModel.status == true){
+      BagList();
+    }
+    // setState(() {
+    //   print("Position ${position}");
+    //   bag_list[position].data?.removeAt(removeposition);
+    //   Fluttertoast.showToast(msg: "Amount deleted",gravity: ToastGravity.BOTTOM);
+    // });
   }
 
-  double calculateTotalAmount(List<Datum> cashDetails) {
+  double calculateTotalAmount(List<BagAmount> cashDetails) {
     return cashDetails.fold(0,
         (previousValue, map) => previousValue + int.parse(map.amount ?? "0"));
   }
 
-  double finaltotolAmount(List<Bag> _cashdetails) {
+  double finaltotolAmount(List<BagsBody> _cashdetails) {
     return _cashdetails.fold(
         0,
         (previousValue, element) =>
@@ -166,26 +172,35 @@ class _EditDeliveryPageState extends State<EditDeliveryPage> {
     });
   }
 
+
+
   @override
   void initState() {
-    // print(widget.order_id);
-    // print(_list);
-    // print(_bagPreferences?.getStringList("_bagList"));
+    getPrefs();
+
     super.initState();
-    setState(() {});
-    getAsync();
+  }
+  String user_id="";
+  void getPrefs()async{
+    preferences = await SharedPreferences.getInstance();
+    user_id = preferences.getString("user_id") ?? "";
+    // BagList();
   }
 
   Future<void> scanBarcodeNormal() async {
     try {
       barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
           '#ff6666', 'Cancel', true, ScanMode.QR);
-      if (barcodeScanRes.matchAsPrefix("-1") == null) {
-        // _bagPreferences?.setStringList("_bagList", bag_list);
-        _addList("A-${bag_list.length + 1} bag");
-        BagList();
-      }
-      // print("ahdgfhdhf ${_list}");
+      // if (barcodeScanRes.matchAsPrefix("-1") == null) {
+      //   // _bagPreferences?.setStringList("_bagList", bag_list);
+      //   // _addList("A-${bag_list.length + 1} bag");
+      var data = jsonDecode(barcodeScanRes);
+      // GetBagAmountModel user = GetBagAmountModel.fromJson(data);
+      QrCodeDetail qrCodeDetail = QrCodeDetail.fromJson(data);
+      _addList(qrCodeDetail.bage_id.toString());
+        // BagList("",barcodeScanRes);
+      // }
+      print("ahdgfhdhf ${barcodeScanRes}");
       // print("njdsdhfshjdkfl "+barcodeScanRes);
     } on PlatformException {
       barcodeScanRes = 'Failed to get platform version.';
@@ -262,9 +277,9 @@ class _EditDeliveryPageState extends State<EditDeliveryPage> {
                             children: [
                               Row(
                                 children: [
-                                  Image.asset(
-                                    "images/person.png",
-                                    height: 15.0,
+                                  Container(
+                                      margin: EdgeInsets.only(left: 10.0, top: 10.0, right: 10.0),
+                                      child: Icon(Icons.bookmark_border)
                                   ),
                                   SizedBox(width: 6.0),
                                   Text(
@@ -279,13 +294,13 @@ class _EditDeliveryPageState extends State<EditDeliveryPage> {
                                 ],
                               ),
                               SizedBox(
-                                height: 10,
+                                height: 5,
                               ),
                               Row(
                                 children: [
-                                  Image.asset(
-                                    "images/bag.png",
-                                    height: 15.0,
+                                  Container(
+                                      margin: EdgeInsets.only(left: 10.0, top: 10.0, right: 10.0),
+                                      child: Icon(Icons.monetization_on_outlined)
                                   ),
                                   SizedBox(width: 6.0),
                                   Text(
@@ -301,10 +316,57 @@ class _EditDeliveryPageState extends State<EditDeliveryPage> {
                                   )
                                 ],
                               ),
+
+                              Row(
+                                children: [
+                                  Container(
+                                      margin: EdgeInsets.only(left: 10.0, top: 10.0, right: 10.0),
+                                      child: Icon(Icons.menu)
+                                  ),
+                                  Container(
+                                    margin: EdgeInsets.only(top: 10.0,),
+                                    child: Text( "Status: ",
+                                      style: TextStyle(fontWeight: FontWeight.w600),
+                                    ),
+                                  ),
+                                  Spacer(),
+                                  Container(
+                                    margin: EdgeInsets.only(top: 10.0,),
+                                    child: Text("${widget.status=="1" ? "Pending":
+                                    widget.status=="2" ? "Accepted":
+                                    widget.status=="3" ? "Processing":
+                                    widget.status=="4" ? "Picked-Up":
+                                    widget.status=="5" ? "Complete": "Zone Delivery Complete"
+                                    }",
+                                      style: TextStyle(fontWeight: FontWeight.w400),
+                                    ),
+                                  )
+                                ],
+                              ),
+                              // Row(
+                              //   children: [
+                              //     Image.asset(
+                              //       "images/bag.png",
+                              //       height: 15.0,
+                              //     ),
+                              //     SizedBox(width: 6.0),
+                              //     Text(
+                              //       "Amount",
+                              //       style:
+                              //           TextStyle(fontWeight: FontWeight.w600),
+                              //     ),
+                              //     Spacer(),
+                              //     Text(
+                              //       widget.amount,
+                              //       style:
+                              //           TextStyle(fontWeight: FontWeight.w400),
+                              //     )
+                              //   ],
+                              // ),
                               SizedBox(
                                 height: 10,
                               ),
-                              Container(
+                             if(widget.status!="5" && widget.status!="6") Container(
                                 alignment: Alignment.bottomCenter,
                                 decoration: const BoxDecoration(
                                     borderRadius:
@@ -342,20 +404,19 @@ class _EditDeliveryPageState extends State<EditDeliveryPage> {
                         ),
                       ),
                     ),
-                    if (bag_list.isNotEmpty)
+                    if (_bag.isNotEmpty)
                       Container(
                         child: Column(
                           children: [
                             ListView.builder(
-                                itemCount: bag_list.length,
+                                itemCount: _bag.length,
                                 physics: NeverScrollableScrollPhysics(),
                                 shrinkWrap: true,
                                 itemBuilder: (context, index) {
                                   _controllers.add(TextEditingController());
                                   _controllersamount
                                       .add(TextEditingController());
-                                  List<Datum> _cashDetails =
-                                      bag_list[index].data ?? [];
+                                  List<BagAmount> _cashDetails = _bag[index].data ?? [];
                                   return Container(
                                     child: Column(
                                       mainAxisAlignment:
@@ -415,7 +476,7 @@ class _EditDeliveryPageState extends State<EditDeliveryPage> {
                                                             ),
                                                             Spacer(),
                                                             Text(
-                                                              "${bag_list[index].name}",
+                                                              "${_bag[index].bagName}",
                                                               style: TextStyle(
                                                                   fontWeight:
                                                                       FontWeight
@@ -484,8 +545,21 @@ class _EditDeliveryPageState extends State<EditDeliveryPage> {
                                                             onChanged:
                                                                 (String? data) {
                                                               setState(() {
-                                                                selectedDenomination =
-                                                                    data!;
+                                                                selectedDenomination = data!;
+                                                                if(selectedDenomination=="Select Denomination" && _controllers[index].text.isNotEmpty){
+                                                                  _controllersamount[index]
+                                                                      .text =
+                                                                      (int
+                                                                          .parse(
+                                                                          _controllers[index].text) *
+                                                                          int
+                                                                              .parse("0"))
+                                                                          .toString();
+                                                                }else if(_controllers[index].text.isNotEmpty){
+                                                                  _controllersamount[index].text =
+                                                                      (int.parse(_controllers[index].text) *
+                                                                          int.parse(selectedDenomination.toString())).toString();
+                                                                }
                                                               });
                                                             },
                                                             items: denominationList.map<
@@ -565,14 +639,31 @@ class _EditDeliveryPageState extends State<EditDeliveryPage> {
                                                               onChanged:
                                                                   (text) {
                                                                 setState(() {
-                                                                  if (selectedDenomination !=
-                                                                      "Select Denomination") {
-                                                                    _controllersamount[
-                                                                            index]
-                                                                        .text = (int.parse(text) *
-                                                                            int.parse(selectedDenomination.toString()))
-                                                                        .toString();
-                                                                  }
+                                                                  if (selectedDenomination != "Select Denomination") {
+                                                                    if(text.isEmpty){
+                                                                      _controllersamount[index]
+                                                                          .text =
+                                                                          (int
+                                                                              .parse(
+                                                                              "0") *
+                                                                              int
+                                                                                  .parse(
+                                                                                  selectedDenomination
+                                                                                      .toString()))
+                                                                              .toString();
+                                                                    }else {
+                                                                      _controllersamount[index]
+                                                                          .text =
+                                                                          (int
+                                                                              .parse(
+                                                                              text) *
+                                                                              int
+                                                                                  .parse(
+                                                                                  selectedDenomination
+                                                                                      .toString()))
+                                                                              .toString();
+                                                                    }
+                                                                    }
                                                                 });
                                                               },
                                                               // style: TextStyle(fontSize: 18.0),
@@ -695,14 +786,14 @@ class _EditDeliveryPageState extends State<EditDeliveryPage> {
                                                                 _controllers[
                                                                         index]
                                                                     .text,
-                                                                "${bag_list[index].name}",
+                                                                "${_bag[index].bagName}",
                                                                 index,
                                                                 (int.tryParse(selectedDenomination
                                                                             .toString())! *
                                                                         int.tryParse(_controllers[index]
                                                                             .text
                                                                             .toString())!)
-                                                                    .toString());
+                                                                    .toString(),_bag[index].bagId.toString());
                                                             setState(() {
                                                               _controllers[index].text = "";
                                                               _controllersamount[index].text = "";
@@ -727,7 +818,7 @@ class _EditDeliveryPageState extends State<EditDeliveryPage> {
                                                                 const EdgeInsets
                                                                     .all(10.0),
                                                             child: Text(
-                                                              'Add More',
+                                                              'Add',
                                                               style: TextStyle(
                                                                   fontWeight:
                                                                       FontWeight
@@ -799,7 +890,7 @@ class _EditDeliveryPageState extends State<EditDeliveryPage> {
                                                                               TextStyle(fontWeight: FontWeight.w600),
                                                                         ),
                                                                         Text(
-                                                                          "${bag_list[index].name}",
+                                                                          "${_bag[index].bagName}",
                                                                           style:
                                                                               TextStyle(fontWeight: FontWeight.w400),
                                                                         ),
@@ -812,9 +903,9 @@ class _EditDeliveryPageState extends State<EditDeliveryPage> {
                                                                             child:
                                                                                 new IconButton(
                                                                               padding: new EdgeInsets.all(0.0),
-                                                                              icon: new Icon(Icons.clear, size: 18.0),
+                                                                              icon: new Icon(Icons.delete, size: 18.0),
                                                                               onPressed: () {
-                                                                                _removeCashDetail(index,i);
+                                                                                _removeCashDetail(_cashDetails[i].bagLogId.toString(),_bag[index].bagId.toString());
                                                                               },
                                                                             ))
                                                                       ],
@@ -984,7 +1075,8 @@ class _EditDeliveryPageState extends State<EditDeliveryPage> {
                                                       child: Row(
                                                         children: [
                                                           Text(
-                                                            "${calculateTotalAmount(bag_list[index].data ?? []).toInt()}",
+                                                            "${calculateTotalAmount(_bag[index].data ?? []).toInt()}",
+                                                            // "",
                                                             style: TextStyle(
                                                                 fontWeight:
                                                                     FontWeight
@@ -1011,7 +1103,7 @@ class _EditDeliveryPageState extends State<EditDeliveryPage> {
                             SizedBox(
                               height: 10,
                             ),
-                            if (bag_list.isNotEmpty)
+                            if (finaltotolAmount(_bag ?? []).toInt()!=0)
                               Container(
                                 width: MediaQuery.of(context).size.width,
                                 height: 40,
@@ -1025,7 +1117,8 @@ class _EditDeliveryPageState extends State<EditDeliveryPage> {
                                 child: Row(
                                   children: [
                                     Text(
-                                      "${finaltotolAmount(bag_list ?? []).toInt()}",
+                                      "${finaltotolAmount(_bag ?? []).toInt()}",
+                                      // "",
                                       style: TextStyle(
                                           fontWeight: FontWeight.w400),
                                     ),
@@ -1056,16 +1149,16 @@ class _EditDeliveryPageState extends State<EditDeliveryPage> {
                                   highlightColor: Colors.transparent,
                                   splashColor: Colors.transparent,
                                   onPressed: () {
-                                    if (finaltotolAmount(bag_list ?? [])
-                                            .toInt() ==
+                                    if (finaltotolAmount(_bag ?? []).toInt() ==
                                         int.parse(widget.amount)) {
                                       Navigator.of(context).push(
                                           MaterialPageRoute(
                                               builder: (context) =>
                                                   DeliveryViewPage(
-                                                    bagValue: "bagValue",
-                                                    totalValue: "totalValue",
+                                                    bagValue: "${_bag.fold("", (previousValue, element) => previousValue+" "+element.bagName.toString())}",
+                                                    totalValue: "${finaltotolAmount(_bag ?? []).toInt()}",
                                                     orderId: widget.order_id,
+                                                    user_id: user_id,
                                                   )));
                                     } else {
                                       Fluttertoast.showToast(
