@@ -12,7 +12,7 @@ class HomePage extends StatefulWidget {
 
 
 class _MyStatefulWidgetPageState extends State<HomePage> {
-  List<Body> _orderList = [];
+  List<OrderListModel> _orderList = [];
   late OrderListModel _orderListModel;
   bool _isPageLoading = false;
 
@@ -21,15 +21,15 @@ class _MyStatefulWidgetPageState extends State<HomePage> {
     _isPageLoading = true;
     preferences = await SharedPreferences.getInstance();
     String user_id = preferences.getString("user_id") ?? "";
-    _orderListModel = await Service.DeliveryOrderList("$user_id");
-    if(_orderListModel.status == true){
-
-        _isPageLoading = false;
-        for(int i=0; i<_orderListModel.body!.length; i++){
-          _orderList = _orderListModel.body ?? <Body> [];
-        }
-
-    }
+    _orderList = await Service.DeliveryOrderList("$user_id");
+    // if(_orderListModel.status == true){
+    //
+    //     _isPageLoading = false;
+    //     // for(int i=0; i<_orderListModel..length; i++){
+    //       _orderList = _orderListModel ?? <OrderListModel> [];
+    //     // }
+    //
+    // }
   setState(() {
     _isPageLoading = false;
   });
@@ -116,7 +116,7 @@ class _MyStatefulWidgetPageState extends State<HomePage> {
                       scrollDirection: Axis.vertical,
                       physics: NeverScrollableScrollPhysics(),
                       itemBuilder: (context, index){
-                      Body body = _orderList[index];
+                      OrderListModel body = _orderList[index];
                         return InkWell(
                           onTap: (){
                           },
@@ -146,7 +146,7 @@ class _MyStatefulWidgetPageState extends State<HomePage> {
                                       ),
                                       Container(
                                         margin: EdgeInsets.only(top: 10.0,),
-                                        child: Text( "Order ID: #${body.orderId.toString()}",
+                                        child: Text( "Order ID: #${body.id.toString()}",
                                           style: TextStyle(fontWeight: FontWeight.w600),
                                         ),
                                       ),
@@ -174,7 +174,7 @@ class _MyStatefulWidgetPageState extends State<HomePage> {
                                       ),
                                       Container(
                                         margin: EdgeInsets.only(top: 10.0,),
-                                        child: Text("Date: ${body.dateTime.toString()}",
+                                        child: Text("Date: ${body.updatedAt.toString()}",
                                           style: TextStyle(fontWeight: FontWeight.w400),
                                         ),
                                       )
@@ -211,7 +211,7 @@ class _MyStatefulWidgetPageState extends State<HomePage> {
                                       InkWell(
                                         onTap: (){
                                           Navigator.of(context).push(MaterialPageRoute(
-                                              builder: (context) => EditDeliveryPage(body.orderId.toString(), body.amount.toString(),body.status.toString()))
+                                              builder: (context) => EditDeliveryPage(body.id.toString(), body.amount.toString(),body.status.toString()))
                                           );
                                         },
                                         child: Container(

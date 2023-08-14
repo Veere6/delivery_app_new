@@ -24,85 +24,146 @@ class EditDeliveryPage extends StatefulWidget {
 }
 
 class _EditDeliveryPageState extends State<EditDeliveryPage> {
-  late GetBagAmountModel _getBagModel;
+  // late GetBagAmountModel _getBagModel;
   late AddtBagAmountModel _addtBagAmountModel;
   List<String> denominationList = [
     'Select Denomination',
-    '2000',
     '500',
-    '200',
     '100',
-    '50'
+    '50',
+    '20',
+    '10'
   ];
   String? selectedDenomination = 'Select Denomination';
   TextEditingController count = TextEditingController();
   List<String> noOfBags = [];
-  List<BagsBody> _bag = [];
+  List<BagDetailList> _bag = [];
   List<TextEditingController> _controllers = [];
+  List<TextEditingController> _controllers2 = [];
   List<TextEditingController> _controllersamount = [];
+  List<TextEditingController> _controllersamount2 = [];
   String barcodeScanRes = "";
   late SharedPreferences preferences;
-  Future<void> BagList() async {
+
+
+  List<BagDetailList> checklist=[];
+
+  Future<void> BagList(String order_id) async {
     _bag.clear();
+    checklist.clear();
     if (barcodeScanRes.isNotEmpty) {
-      _getBagModel = await Service.order_amount_by_bag("$user_id", widget.order_id);
-      if (_getBagModel.status == true) {
-        setState(() {
-          for (int i = 0; i < _getBagModel.body!.length; i++) {
-            _bag = _getBagModel.body ?? <BagsBody>[];
-          }
-        });
+      _bag = await Service.order_amount_by_bag(order_id);
+
+      for (BagDetailList person in _bag) {
+        // Check if the name is the same
+        if (checklist.any((p) => p.name == person.name)) {
+          // Name already exists in the filtered list, skip this person
+          continue;
+        }
+        // Add the person to the filtered list
+
+        checklist.add(person);
       }
+
+
+      print("???????  $checklist");
+
+      // if (_getBagModel.status == true) {
+        setState((){
+      //     for (int i = 0; i < _getBagModel.body!.length; i++) {
+      //       _bag = _getBagModel.body ?? <BagDetail>[];
+      //     }
+        });
+      // }
     }
   }
 
 
-  Future<bool> AddBagAmount(
-      String count, String name, int position, String amount,String bag_id) async {
-    _addtBagAmountModel = await Service.AddBagAmount(
-        "$user_id", bag_id, selectedDenomination.toString(), count, widget.order_id);
+  void AddAmount(final object)async{
+    await Service.AddBagAmount(object);
+  }
 
-    if (_addtBagAmountModel.status == true) {
-      Fluttertoast.showToast(
-          msg: _addtBagAmountModel.msg.toString(),
-          toastLength: Toast.LENGTH_SHORT);
-      // _addCashDetail(
-      //     count, selectedDenomination.toString(), amount, name, position);
-      // _addCashDetail(count);
-      // print(_cashDetails);
-      // print(_addtBagAmountModel.msg);
-      BagList();
-      return true;
-    } else {
-      Fluttertoast.showToast(
-          msg: _addtBagAmountModel.msg.toString(),
-          toastLength: Toast.LENGTH_SHORT);
+  Future<bool> AddBagAmount(String name,String firstrs,String secondrs,String thirdrs,String fourrs,String fivers,
+      String amount, String orderID) async {
+    // bool iswork = await Service.AddBagAmount(name, firstrs, secondrs, thirdrs, fourrs, fivers, amount, orderID);
 
-      print(_addtBagAmountModel.msg);
-      return false;
+    _bag.add(
+        BagDetailList.fromJson({
+          "name": name,
+          "10rs": int.tryParse(firstrs),
+          "20rs": int.tryParse(secondrs),
+          "50rs": int.tryParse(thirdrs),
+          "100rs": int.tryParse(fourrs),
+          "500rs": int.tryParse(fivers),
+          "amount": int.tryParse(amount),
+          "order": int.tryParse(orderID),
+        }));
+    for (BagDetailList person in _bag) {
+      // Check if the name is the same
+      if (checklist.any((p) => p.name == person.name)) {
+        // Name already exists in the filtered list, skip this person
+        continue;
+      }
+      // Add the person to the filtered list
+      checklist.add(person);
     }
+    setState(() {
+
+    });
+    return true;
+    // if (iswork) {
+    //   Fluttertoast.showToast(
+    //       msg: "Amount added",
+    //       toastLength: Toast.LENGTH_SHORT);
+    //   // _addCashDetail(
+    //   //     count, selectedDenomination.toString(), amount, name, position);
+    //   // _addCashDetail(count);
+    //   // print(_cashDetails);
+    //   // print(_addtBagAmountModel.msg);
+    //   _addList(bage_id);
+    //   return true;
+    // } else {
+    //   Fluttertoast.showToast(
+    //       msg: "Error found",
+    //       toastLength: Toast.LENGTH_SHORT);
+    //
+    //   // print(_addtBagAmountModel.msg);
+    //   return false;
+    // }
   }
 
   final List<String> _list = [];
 
+
   void _addList(String bag_id) async{
-
-
+    // checklist.clear();
+    // _bag.clear();
       // bag_list.add(Bag(name: bagname, data: []));
-     BagDetail _bagdetails = await Service.BagDetailAPi("$bag_id");
-
-     if(_bagdetails.status==true){
-     if(_bagdetails.body!=null) {
-       _bag.add(BagsBody(bagId: "${_bagdetails.body?[0].bagId}",
-           bagName: "${_bagdetails.body?[0].bagName}",
-           bageCode: "${_bagdetails.body?[0].bageCode}",
-           qrImage: "${_bagdetails.body?[0].qrImage}",
-           data: []));
-       // _list.add(barcodeScanRes);
+     // _bag = await Service.BagDetailAPi("$bag_id");
+     // if(_bag.isEmpty){
+      _bag.add(
+          BagDetailList.fromJson({
+        "name": bag_id,
+        "10rs": 0,
+        "20rs": 0,
+        "50rs": 0,
+        "100rs": 0,
+        "500rs": 0,
+        "amount": 0,
+        "order": 11111110,
+      }));
+    // }
+     for (BagDetailList person in _bag) {
+       // Check if the name is the same
+       if (checklist.any((p) => p.name == person.name)) {
+         // Name already exists in the filtered list, skip this person
+         continue;
+       }
+       // Add the person to the filtered list
+       checklist.add(person);
      }
-     }else{
-       Fluttertoast.showToast(msg: "${_bagdetails.msg}",gravity: ToastGravity.BOTTOM);
-     }
+      selectedDenomination= 'Select Denomination';
+     print("???????? $checklist");
      setState(() {
     });
   }
@@ -123,12 +184,17 @@ class _EditDeliveryPageState extends State<EditDeliveryPage> {
   //   });
   // }
 
-  void _removeCashDetail(String bag_log_id,String bag_id) async {
+  void _removeCashDetail(int index) async {
     // void _addCashDetail(String count) {
-    CommonModel commonModel = await Service.delete_bag_amount(bag_log_id, bag_id);
-    if(commonModel.status == true){
-      BagList();
-    }
+    // CommonModel commonModel = await Service.delete_bag_amount(bag_id);
+    // if(commonModel.status == true){
+    //   BagList(widget.order_id);
+    _bag.removeAt(index);
+    setState(() {
+
+    });
+    // _addList(bage_id);
+    // }
     // setState(() {
     //   print("Position ${position}");
     //   bag_list[position].data?.removeAt(removeposition);
@@ -136,20 +202,14 @@ class _EditDeliveryPageState extends State<EditDeliveryPage> {
     // });
   }
 
-  double calculateTotalAmount(List<BagAmount> cashDetails) {
+  double calculateTotalAmount(List<BagDetailList> cashDetails) {
     return cashDetails.fold(0,
-        (previousValue, map) => previousValue + int.parse(map.amount ?? "0"));
+            (previousValue, map) => previousValue + int.parse(map.amount.toString() ?? "0"));
   }
 
-  double finaltotolAmount(List<BagsBody> _cashdetails) {
-    return _cashdetails.fold(
-        0,
-        (previousValue, element) =>
-            previousValue +
-            (element.data!.fold(
-                0,
-                (previousValue2, element2) =>
-                    previousValue2 + int.parse(element2.amount ?? "0"))));
+  double finaltotolAmount(List<BagDetailList> _cashdetails) {
+    return _cashdetails.fold(0,
+            (previousValue, map) => previousValue + int.parse(map.amount.toString() ?? "0"));
   }
 
   String _scanBarcode = 'Unknown';
@@ -186,7 +246,7 @@ class _EditDeliveryPageState extends State<EditDeliveryPage> {
     user_id = preferences.getString("user_id") ?? "";
     // BagList();
   }
-
+  String bage_id="";
   Future<void> scanBarcodeNormal() async {
     try {
       barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
@@ -194,13 +254,18 @@ class _EditDeliveryPageState extends State<EditDeliveryPage> {
       // if (barcodeScanRes.matchAsPrefix("-1") == null) {
       //   // _bagPreferences?.setStringList("_bagList", bag_list);
       //   // _addList("A-${bag_list.length + 1} bag");
-      var data = jsonDecode(barcodeScanRes);
-      // GetBagAmountModel user = GetBagAmountModel.fromJson(data);
-      QrCodeDetail qrCodeDetail = QrCodeDetail.fromJson(data);
-      _addList(qrCodeDetail.bage_id.toString());
+      print("ahdgfhdhf ${barcodeScanRes}");
+      // var data = jsonDecode(barcodeScanRes);
+      // // GetBagAmountModel user = GetBagAmountModel.fromJson(data);
+      // QrCodeDetail qrCodeDetail = QrCodeDetail.fromJson(data);
+      // bage_id=qrCodeDetail.bage_id.toString();
+      // bage_id="2";
+      String extractedString = barcodeScanRes.substring(barcodeScanRes.lastIndexOf('/') + 1);
+      print(extractedString);
+      _addList(extractedString);
         // BagList("",barcodeScanRes);
       // }
-      print("ahdgfhdhf ${barcodeScanRes}");
+      // print("ahdgfhdhf ${barcodeScanRes}");
       // print("njdsdhfshjdkfl "+barcodeScanRes);
     } on PlatformException {
       barcodeScanRes = 'Failed to get platform version.';
@@ -409,20 +474,32 @@ class _EditDeliveryPageState extends State<EditDeliveryPage> {
                         child: Column(
                           children: [
                             ListView.builder(
-                                itemCount: _bag.length,
+                                itemCount: checklist.length,
                                 physics: NeverScrollableScrollPhysics(),
                                 shrinkWrap: true,
                                 itemBuilder: (context, index) {
                                   _controllers.add(TextEditingController());
-                                  _controllersamount
-                                      .add(TextEditingController());
-                                  List<BagAmount> _cashDetails = _bag[index].data ?? [];
+                                  _controllersamount.add(TextEditingController());
+                                  BagDetailList _cashDetails = checklist[index];
+                                  // bool isSkip=true;
+                                  // if (_bag.any((p) => p.name == _cashDetails.name)) {
+                                  //   // Name already exists in the filtered list, skip this person
+                                  //   isSkip = false;
+                                  // }
+                                  int amount =0;
+                                  for(var item in _bag){
+                                    if(_cashDetails.name==item.name){
+                                      amount=amount+item.amount!;
+                                    }
+                                  }
+
+
                                   return Container(
                                     child: Column(
                                       mainAxisAlignment:
-                                          MainAxisAlignment.start,
+                                      MainAxisAlignment.start,
                                       crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                      CrossAxisAlignment.start,
                                       children: [
                                         SizedBox(height: 16.0),
                                         Container(
@@ -432,31 +509,31 @@ class _EditDeliveryPageState extends State<EditDeliveryPage> {
                                               elevation: 5,
                                               child: Column(
                                                 mainAxisAlignment:
-                                                    MainAxisAlignment.start,
+                                                MainAxisAlignment.start,
                                                 crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
+                                                CrossAxisAlignment.start,
                                                 children: [
                                                   Container(
                                                     margin:
-                                                        EdgeInsets.all(10.0),
+                                                    EdgeInsets.all(10.0),
                                                     decoration: BoxDecoration(
                                                         border: Border.all(
                                                             color: Color(
                                                                 0xffABAAB0),
                                                             width: 1.0),
                                                         borderRadius:
-                                                            BorderRadius.all(
-                                                                Radius.circular(
-                                                                    10.0))),
+                                                        BorderRadius.all(
+                                                            Radius.circular(
+                                                                10.0))),
                                                     padding:
-                                                        EdgeInsets.all(10.0),
+                                                    EdgeInsets.all(10.0),
                                                     child: Column(
                                                       mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .start,
+                                                      MainAxisAlignment
+                                                          .start,
                                                       crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
+                                                      CrossAxisAlignment
+                                                          .start,
                                                       children: [
                                                         // SizedBox(height: 10,),
                                                         Row(
@@ -471,16 +548,27 @@ class _EditDeliveryPageState extends State<EditDeliveryPage> {
                                                               "Bag",
                                                               style: TextStyle(
                                                                   fontWeight:
-                                                                      FontWeight
-                                                                          .w600),
+                                                                  FontWeight
+                                                                      .w600),
                                                             ),
                                                             Spacer(),
                                                             Text(
-                                                              "${_bag[index].bagName}",
+                                                              "${checklist[index].name}",
                                                               style: TextStyle(
                                                                   fontWeight:
-                                                                      FontWeight
-                                                                          .w400),
+                                                                  FontWeight
+                                                                      .w400),
+                                                            ),
+                                                            InkWell(
+                                                              onTap: (){
+                                                                setState(() {
+                                                                  _bag.removeWhere((item) => item.name == checklist[index].name);
+                                                                  checklist.removeAt(index);
+                                                                });
+                                                                // print(checklist);
+                                                                // _removeCashDetail(_bag[index].id.toString());
+                                                              },
+                                                              child: Icon(Icons.delete_outline),
                                                             )
                                                           ],
                                                         ),
@@ -494,601 +582,361 @@ class _EditDeliveryPageState extends State<EditDeliveryPage> {
                                                         SizedBox(
                                                           height: 10,
                                                         ),
-                                                        Container(
-                                                          child: Text(
-                                                            "Denomination",
-                                                            style: TextStyle(
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w600),
-                                                          ),
-                                                        ),
-                                                        SizedBox(
-                                                          height: 10,
-                                                        ),
-                                                        Container(
-                                                          width: MediaQuery.of(
-                                                                  context)
-                                                              .size
-                                                              .width,
-                                                          height: 50,
-                                                          alignment: Alignment
-                                                              .centerLeft,
-                                                          padding: EdgeInsets
-                                                              .symmetric(
-                                                                  horizontal:
-                                                                      10.0),
-                                                          decoration: BoxDecoration(
-                                                              color: Color(
-                                                                  0xffF1F0F6),
-                                                              borderRadius: BorderRadius
-                                                                  .all(Radius
-                                                                      .circular(
-                                                                          8.0))),
-                                                          child: DropdownButton(
-                                                            value:
-                                                                selectedDenomination,
-                                                            isExpanded: true,
-                                                            icon: Icon(Icons
-                                                                .keyboard_arrow_down_sharp),
-                                                            iconSize: 20,
-                                                            elevation: 16,
-                                                            style: TextStyle(
-                                                                color: Colors
-                                                                    .black),
-                                                            underline:
-                                                                Container(
-                                                              height: 0,
-                                                              color: Colors
-                                                                  .deepPurpleAccent,
+                                                        Row(
+                                                          children: [
+                                                            Expanded(
+                                                              flex:1,
+                                                                child: Container(
+                                                                  child: Text("Denomination",style: TextStyle(fontSize: 12,fontWeight: FontWeight.w600),),
+                                                                )
                                                             ),
-                                                            onChanged:
-                                                                (String? data) {
-                                                              setState(() {
-                                                                selectedDenomination = data!;
-                                                                if(selectedDenomination=="Select Denomination" && _controllers[index].text.isNotEmpty){
-                                                                  _controllersamount[index]
-                                                                      .text =
-                                                                      (int
-                                                                          .parse(
-                                                                          _controllers[index].text) *
-                                                                          int
-                                                                              .parse("0"))
-                                                                          .toString();
-                                                                }else if(_controllers[index].text.isNotEmpty){
-                                                                  _controllersamount[index].text =
-                                                                      (int.parse(_controllers[index].text) *
-                                                                          int.parse(selectedDenomination.toString())).toString();
-                                                                }
-                                                              });
-                                                            },
-                                                            items: denominationList.map<
-                                                                DropdownMenuItem<
-                                                                    String>>((String
-                                                                value) {
-                                                              return DropdownMenuItem<
-                                                                  String>(
-                                                                value: value,
-                                                                child:
-                                                                    Text(value),
-                                                              );
-                                                            }).toList(),
-                                                          ),
-                                                        ),
-                                                        SizedBox(
-                                                          height: 10,
-                                                        ),
-                                                        Container(
-                                                          child: Text(
-                                                            "Count",
-                                                            style: TextStyle(
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w600),
-                                                          ),
-                                                        ),
-                                                        SizedBox(
-                                                          height: 10,
-                                                        ),
-                                                        Container(
-                                                            width: MediaQuery
-                                                                    .of(context)
-                                                                .size
-                                                                .width,
-                                                            height: 50,
-                                                            alignment:
-                                                                Alignment
-                                                                    .centerLeft,
-                                                            padding: EdgeInsets
-                                                                .symmetric(
-                                                                    horizontal:
-                                                                        10.0),
-                                                            decoration: BoxDecoration(
-                                                                color: Color(
-                                                                    0xffF1F0F6),
-                                                                borderRadius: BorderRadius
-                                                                    .all(Radius
-                                                                        .circular(
-                                                                            8.0))),
-                                                            child:
-                                                                TextFormField(
-                                                              controller:
-                                                                  _controllers[
-                                                                      index],
-                                                              keyboardType:
-                                                                  TextInputType
-                                                                      .number,
-                                                              decoration: InputDecoration(
-                                                                  hintText:
-                                                                      'Count',
-                                                                  labelStyle: TextStyle(
-                                                                      color: Colors
-                                                                          .black,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .w400),
-                                                                  hintStyle: TextStyle(
-                                                                      color: Colors
-                                                                          .black,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .w400),
-                                                                  border:
-                                                                      InputBorder
-                                                                          .none),
-                                                              onChanged:
-                                                                  (text) {
-                                                                setState(() {
-                                                                  if (selectedDenomination != "Select Denomination") {
-                                                                    if(text.isEmpty){
-                                                                      _controllersamount[index]
-                                                                          .text =
-                                                                          (int
-                                                                              .parse(
-                                                                              "0") *
-                                                                              int
-                                                                                  .parse(
-                                                                                  selectedDenomination
-                                                                                      .toString()))
-                                                                              .toString();
-                                                                    }else {
-                                                                      _controllersamount[index]
-                                                                          .text =
-                                                                          (int
-                                                                              .parse(
-                                                                              text) *
-                                                                              int
-                                                                                  .parse(
-                                                                                  selectedDenomination
-                                                                                      .toString()))
-                                                                              .toString();
-                                                                    }
-                                                                    }
-                                                                });
-                                                              },
-                                                              // style: TextStyle(fontSize: 18.0),
-                                                            )),
-                                                        if (_controllers[index]
-                                                            .text
-                                                            .isNotEmpty)
-                                                          SizedBox(
-                                                            height: 10,
-                                                          ),
-                                                        if (_controllers[index]
-                                                            .text
-                                                            .isNotEmpty)
-                                                          Container(
-                                                            child: Text(
-                                                              "Amount",
-                                                              style: TextStyle(
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w600),
+                                                            SizedBox(height: 20,width: 20,),
+                                                            Expanded(
+                                                                flex:1,
+                                                                child: Container(
+                                                                  child: Text("Count",style: TextStyle(fontSize: 12,fontWeight: FontWeight.w600)),
+                                                                )
                                                             ),
-                                                          ),
-                                                        if (_controllers[index]
-                                                            .text
-                                                            .isNotEmpty)
-                                                          SizedBox(
-                                                            height: 10,
-                                                          ),
-                                                        if (_controllers[index]
-                                                            .text
-                                                            .isNotEmpty)
-                                                          Container(
-                                                              width: MediaQuery
-                                                                      .of(
-                                                                          context)
-                                                                  .size
-                                                                  .width,
-                                                              height: 50,
-                                                              alignment: Alignment
-                                                                  .centerLeft,
-                                                              padding: EdgeInsets
-                                                                  .symmetric(
-                                                                      horizontal:
-                                                                          10.0),
-                                                              decoration: BoxDecoration(
-                                                                  color: Color(
-                                                                      0xffF1F0F6),
-                                                                  borderRadius:
-                                                                      BorderRadius.all(Radius
-                                                                          .circular(
-                                                                              8.0))),
-                                                              child:
-                                                                  TextFormField(
-                                                                controller:
-                                                                    _controllersamount[
-                                                                        index],
-                                                                enabled: false,
-                                                                keyboardType:
-                                                                    TextInputType
-                                                                        .number,
-                                                                decoration: InputDecoration(
-                                                                    hintText:
-                                                                        'amount',
-                                                                    labelStyle: TextStyle(
-                                                                        color: Colors
-                                                                            .black,
-                                                                        fontWeight:
-                                                                            FontWeight
-                                                                                .w400),
-                                                                    hintStyle: TextStyle(
-                                                                        color: Colors
-                                                                            .black,
-                                                                        fontWeight:
-                                                                            FontWeight
-                                                                                .w400),
-                                                                    border:
-                                                                        InputBorder
-                                                                            .none),
-                                                                onChanged:
-                                                                    (text) {
-                                                                  setState(
-                                                                      () {});
-                                                                },
-                                                                // style: TextStyle(fontSize: 18.0),
-                                                              )),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  Container(
-                                                    alignment:
-                                                        Alignment.centerRight,
-                                                    child: Container(
-                                                      margin:
-                                                          EdgeInsets.all(10.0),
-                                                      width: 200,
-                                                      height: 45,
-                                                      alignment:
-                                                          Alignment.centerRight,
-                                                      decoration: const BoxDecoration(
-                                                          borderRadius:
-                                                              BorderRadius.all(
-                                                                  Radius
-                                                                      .circular(
-                                                                          5.0)),
-                                                          color: Color(
-                                                              0xff25476a)),
-                                                      // child: _isPageLoading ? Center(
-                                                      //   child: CircularProgressIndicator(),
-                                                      // ):
-                                                      child: ButtonTheme(
-                                                        minWidth: 200,
-                                                        height: 40,
-                                                        child: MaterialButton(
-                                                          highlightColor: Colors
-                                                              .transparent,
-                                                          splashColor: Colors
-                                                              .transparent,
-                                                          onPressed: () async {
-                                                            AddBagAmount(
-                                                                _controllers[
-                                                                        index]
-                                                                    .text,
-                                                                "${_bag[index].bagName}",
-                                                                index,
-                                                                (int.tryParse(selectedDenomination
-                                                                            .toString())! *
-                                                                        int.tryParse(_controllers[index]
-                                                                            .text
-                                                                            .toString())!)
-                                                                    .toString(),_bag[index].bagId.toString());
-                                                            setState(() {
-                                                              _controllers[index].text = "";
-                                                              _controllersamount[index].text = "";
+                                                            SizedBox(height: 20,width: 20,)
+                                                          ],
+                                                        ),
+                                                        SizedBox(height: 5,width: 20,),
 
-                                                            });
-                                                            // if(istrue) {
+                                                        Container(
+                                            child: Column(
+                                              mainAxisAlignment:
+                                              MainAxisAlignment
+                                                  .start,
+                                              crossAxisAlignment:
+                                              CrossAxisAlignment
+                                                  .start,
+                                              children: [
+                                                ListView.builder(
+                                                    shrinkWrap: true,
+                                                    scrollDirection:
+                                                    Axis.vertical,
+                                                    physics:
+                                                    NeverScrollableScrollPhysics(),
+                                                    itemCount:
+                                                    _bag.length,
+                                                    itemBuilder:
+                                                        (context, i) {
+                                                      int denomination=0;
+                                                      int count=0;
+                                                      if(_bag[i].the10Rs!=0){
+                                                        denomination = 10;
+                                                        count = _bag[i].the10Rs ?? 0;
+                                                      }else if(_bag[i].the20Rs!=0){
+                                                        denomination = 20;
+                                                        count = _bag[i].the20Rs ?? 0;
+                                                      }else if(_bag[i].the50Rs!=0){
+                                                        denomination = 50;
+                                                        count = _bag[i].the50Rs ?? 0;
+                                                      }else if(_bag[i].the100Rs!=0){
+                                                        denomination = 100;
+                                                        count = _bag[i].the100Rs ?? 0;
+                                                      }else if(_bag[i].the500Rs!=0){
+                                                        denomination = 500;
+                                                        count = _bag[i].the500Rs ?? 0;
+                                                      }
 
-                                                            // _cashDetails.add({
-                                                            //       'denomination': selectedDenomination,
-                                                            //       'count': _controllers[index].text,
-                                                            //       'amount': int.tryParse(selectedDenomination.toString())! * int.tryParse(_controllers[index].text.toString())!}
-                                                            // );
-                                                            // _cashDetails.add(Bagsmodel(denomination: selectedDenomination,count: _controllers[index].text,amount: int.tryParse(selectedDenomination.toString())! * int.tryParse(_controllers[index].text.toString())!));
-                                                            // print("working r");
-                                                            // setState(() {});
-                                                            // }
-                                                          },
-                                                          textColor:
-                                                              Colors.white,
-                                                          child: Padding(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .all(10.0),
-                                                            child: Text(
-                                                              'Add',
-                                                              style: TextStyle(
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w600),
+                                                      return _cashDetails.name==_bag[i].name ?
+                                                      _bag[i].order == 11111110 ? Container():
+                                                      Container(
+                                                        margin: EdgeInsets.only(top: 5),
+                                                        child: Row(
+                                                          children: [
+                                                            Expanded(
+                                                              flex:1,
+                                                              child: Container(
+                                                                  width: MediaQuery.of(context).size.width,
+                                                                  height: 30,
+                                                                  alignment: Alignment.centerLeft,
+                                                                  padding: EdgeInsets.symmetric(horizontal: 10.0,vertical: 2),
+                                                                  decoration: BoxDecoration(
+                                                                      color: Color(0xffF1F0F6),
+                                                                      borderRadius: BorderRadius.all(Radius.circular(8.0))
+                                                                  ),
+                                                                  child: Text("${denomination}",style: TextStyle(fontSize: 10),)
+                                                              ),
                                                             ),
-                                                          ),
+
+                                                            SizedBox(height: 20,width: 20,),
+                                                            Expanded(
+                                                              flex:1,
+                                                              child: Container(
+                                                                  width: MediaQuery.of(context).size.width,
+                                                                  height: 30,
+                                                                  alignment: Alignment.centerLeft,
+                                                                  padding: EdgeInsets.symmetric(horizontal: 10.0,vertical: 2),
+                                                                  decoration: BoxDecoration(
+                                                                      color: Color(0xffF1F0F6),
+                                                                      borderRadius: BorderRadius.all(Radius.circular(8.0))
+                                                                  ),
+                                                                  child: Text("${count}",style: TextStyle(fontSize: 10),)
+                                                              ),
+                                                            ),
+                                                            SizedBox(height: 20,width: 10,),
+                                                            SizedBox(height: 20,width: 20,
+                                                                child: InkWell(
+                                                                  child: Container(
+                                                                    decoration: BoxDecoration(
+                                                                      shape: BoxShape.circle,
+                                                                      color: Colors.red,
+                                                                    ),
+                                                                    alignment: Alignment.center,
+                                                                    child: Icon(Icons.remove,color:Colors.white,size: 15,),
+                                                                  ),
+                                                                  onTap: (){
+                                                                    _removeCashDetail(i);
+                                                                  },
+                                                                )
+                                                            )
+                                                          ],
                                                         ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  Container(
-                                                    child: Column(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .start,
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      children: [
-                                                        ListView.builder(
-                                                            shrinkWrap: true,
-                                                            scrollDirection:
-                                                                Axis.vertical,
-                                                            physics:
-                                                                NeverScrollableScrollPhysics(),
-                                                            itemCount:
-                                                                _cashDetails
-                                                                    .length,
-                                                            itemBuilder:
-                                                                (context, i) {
-                                                              return Container(
-                                                                margin: EdgeInsets
-                                                                    .all(10.0),
-                                                                decoration: BoxDecoration(
-                                                                    border: Border.all(
-                                                                        color: Color(
-                                                                            0xffABAAB0),
-                                                                        width:
-                                                                            1.0),
-                                                                    borderRadius:
-                                                                        BorderRadius.all(
-                                                                            Radius.circular(10.0))),
-                                                                padding:
-                                                                    EdgeInsets
-                                                                        .all(
-                                                                            10.0),
-                                                                child: Column(
-                                                                  mainAxisAlignment:
-                                                                      MainAxisAlignment
-                                                                          .start,
-                                                                  crossAxisAlignment:
-                                                                      CrossAxisAlignment
-                                                                          .start,
-                                                                  children: [
-                                                                    Row(
-                                                                      children: [
-                                                                        Image
-                                                                            .asset(
-                                                                          "images/bag.png",
-                                                                          height:
-                                                                              15.0,
-                                                                        ),
-                                                                        SizedBox(
-                                                                            width:
-                                                                                6.0),
-                                                                        Text(
-                                                                          "Bag - ",
-                                                                          style:
-                                                                              TextStyle(fontWeight: FontWeight.w600),
-                                                                        ),
-                                                                        Text(
-                                                                          "${_bag[index].bagName}",
-                                                                          style:
-                                                                              TextStyle(fontWeight: FontWeight.w400),
-                                                                        ),
-                                                                        Spacer(),
-                                                                        SizedBox(
-                                                                            height:
-                                                                                18.0,
-                                                                            width:
-                                                                                18.0,
-                                                                            child:
-                                                                                new IconButton(
-                                                                              padding: new EdgeInsets.all(0.0),
-                                                                              icon: new Icon(Icons.delete, size: 18.0),
-                                                                              onPressed: () {
-                                                                                _removeCashDetail(_cashDetails[i].bagLogId.toString(),_bag[index].bagId.toString());
-                                                                              },
-                                                                            ))
-                                                                      ],
+                                                      ):Container();
+                                                    }),
+                                              ],
+                                            ),
+                                          ),
+                                                        SizedBox(height: 5,width: 20,),
+
+                                                        Row(
+                                                          children: [
+                                                            Expanded(
+                                                              flex:1,
+                                                                child: Container(
+                                                                    width: MediaQuery.of(context).size.width,
+                                                                    height: 30,
+                                                                    alignment: Alignment.centerLeft,
+                                                                    padding: EdgeInsets.symmetric(horizontal: 10.0,vertical: 2),
+                                                                    decoration: BoxDecoration(
+                                                                        color: Color(0xffF1F0F6),
+                                                                        borderRadius: BorderRadius.all(Radius.circular(8.0))
                                                                     ),
-                                                                    SizedBox(
-                                                                      height:
-                                                                          10,
-                                                                    ),
-                                                                    Container(
-                                                                      height: 1,
-                                                                      color: Colors
-                                                                          .grey,
-                                                                    ),
-                                                                    SizedBox(
-                                                                      height:
-                                                                          10,
-                                                                    ),
-                                                                    Container(
-                                                                      child:
-                                                                          Text(
-                                                                        "Denomination",
-                                                                        style: TextStyle(
-                                                                            fontWeight:
-                                                                                FontWeight.w600),
-                                                                      ),
-                                                                    ),
-                                                                    SizedBox(
-                                                                      height: 5,
-                                                                    ),
-                                                                    Container(
-                                                                      margin: const EdgeInsets
-                                                                              .only(
-                                                                          top:
-                                                                              10,
-                                                                          bottom:
-                                                                              10.0),
-                                                                      width: MediaQuery.of(
-                                                                              context)
-                                                                          .size
-                                                                          .width,
-                                                                      height:
-                                                                          40,
-                                                                      alignment:
-                                                                          Alignment
-                                                                              .centerLeft,
-                                                                      padding: EdgeInsets.symmetric(
-                                                                          horizontal:
-                                                                              10.0),
-                                                                      decoration: BoxDecoration(
-                                                                          color: Color(
-                                                                              0xffF1F0F6),
-                                                                          borderRadius:
-                                                                              BorderRadius.all(Radius.circular(8.0))),
-                                                                      // child: Text("${_cashDetails[i]['denomination']}"),
-                                                                      child: Text(
-                                                                          "${_cashDetails[i].denomination}"),
-                                                                    ),
-                                                                    Container(
-                                                                      child:
-                                                                          Text(
-                                                                        "Count",
-                                                                        style: TextStyle(
-                                                                            fontWeight:
-                                                                                FontWeight.w600),
-                                                                      ),
-                                                                    ),
-                                                                    SizedBox(
-                                                                      height: 5,
-                                                                    ),
-                                                                    Container(
-                                                                      margin: const EdgeInsets
-                                                                              .only(
-                                                                          top:
-                                                                              10,
-                                                                          bottom:
-                                                                              10.0),
-                                                                      width: MediaQuery.of(
-                                                                              context)
-                                                                          .size
-                                                                          .width,
-                                                                      height:
-                                                                          40,
-                                                                      alignment:
-                                                                          Alignment
-                                                                              .centerLeft,
-                                                                      padding: EdgeInsets.symmetric(
-                                                                          horizontal:
-                                                                              10.0),
-                                                                      decoration: BoxDecoration(
-                                                                          color: Color(
-                                                                              0xffF1F0F6),
-                                                                          borderRadius:
-                                                                              BorderRadius.all(Radius.circular(8.0))),
-                                                                      // child: Text("${_cashDetails[i]['count']}"),
-                                                                      child: Text(
-                                                                          "${_cashDetails[i].count}"),
-                                                                    ),
-                                                                    Container(
-                                                                      child:
-                                                                          Text(
-                                                                        "Amount",
-                                                                        style: TextStyle(
-                                                                            fontWeight:
-                                                                                FontWeight.w600),
-                                                                      ),
-                                                                    ),
-                                                                    SizedBox(
-                                                                      height: 5,
-                                                                    ),
-                                                                    Container(
-                                                                      margin: const EdgeInsets
-                                                                              .only(
-                                                                          top:
-                                                                              10,
-                                                                          bottom:
-                                                                              10.0),
-                                                                      width: MediaQuery.of(
-                                                                              context)
-                                                                          .size
-                                                                          .width,
-                                                                      height:
-                                                                          40,
-                                                                      alignment:
-                                                                          Alignment
-                                                                              .centerLeft,
-                                                                      padding: EdgeInsets.symmetric(
-                                                                          horizontal:
-                                                                              10.0),
-                                                                      decoration: BoxDecoration(
-                                                                          color: Color(
-                                                                              0xffF1F0F6),
-                                                                          borderRadius:
-                                                                              BorderRadius.all(Radius.circular(8.0))),
-                                                                      // child: Text("${_cashDetails[i]['amount']}"),
-                                                                      child: Text(
-                                                                          "${_cashDetails[i].amount}"),
-                                                                    )
-                                                                  ],
+                                                                    child:
+
+                                                                                                    DropdownButton(
+                                                                                                      value:
+                                                                                                          selectedDenomination,
+                                                                                                      isExpanded: true,
+                                                                                                      icon: Icon(Icons
+                                                                                                          .keyboard_arrow_down_sharp),
+                                                                                                      iconSize: 20,
+                                                                                                      elevation: 16,
+                                                                                                      style: TextStyle(
+                                                                                                          color: Colors
+                                                                                                              .black,fontSize: 10),
+                                                                                                      underline:
+                                                                                                          Container(
+                                                                                                        height: 0,
+                                                                                                        color: Colors
+                                                                                                            .deepPurpleAccent,
+                                                                                                      ),
+                                                                                                      onChanged:
+                                                                                                          (String? data) {
+                                                                                                        setState(() {
+                                                                                                          selectedDenomination = data!;
+                                                                                                          if(selectedDenomination=="Select Denomination" && _controllers[index].text.isNotEmpty){
+                                                                                                            _controllersamount[index]
+                                                                                                                .text =
+                                                                                                                (int
+                                                                                                                    .parse(
+                                                                                                                    _controllers[index].text) *
+                                                                                                                    int
+                                                                                                                        .parse("0"))
+                                                                                                                    .toString();
+                                                                                                          }else if(_controllers[index].text.isNotEmpty){
+                                                                                                            _controllersamount[index].text =
+                                                                                                                (int.parse(_controllers[index].text) *
+                                                                                                                    int.parse(selectedDenomination.toString())).toString();
+                                                                                                          }
+                                                                                                        });
+                                                                                                      },
+                                                                                                      items: denominationList.map<
+                                                                                                          DropdownMenuItem<
+                                                                                                              String>>((String
+                                                                                                          value) {
+                                                                                                        return DropdownMenuItem<
+                                                                                                            String>(
+                                                                                                          value: value,
+                                                                                                          child:
+                                                                                                              Text(value),
+                                                                                                        );
+                                                                                                      }).toList(),
+                                                                                                    ),
+
+                                                                    // TextFormField(
+                                                                    //   controller: _controllers[index],
+                                                                    //   keyboardType: TextInputType.number,
+                                                                    //   decoration: InputDecoration(
+                                                                    //       hintText: 'Denomination',
+                                                                    //       labelStyle: TextStyle(color: Colors.black,
+                                                                    //           fontWeight: FontWeight.w400,fontSize: 10),
+                                                                    //       hintStyle: TextStyle(
+                                                                    //           color: Colors.black,
+                                                                    //           fontWeight: FontWeight.w400,fontSize: 10),
+                                                                    //       border: InputBorder.none),
+                                                                    //   onChanged: (text) {
+                                                                    //     // setState(() {
+                                                                    //                                         //   if (selectedDenomination != "Select Denomination") {
+                                                                    //                                         //     if(text.isEmpty){
+                                                                    //                                         //       _controllersamount[index]
+                                                                    //                                         //           .text =
+                                                                    //                                         //           (int
+                                                                    //                                         //               .parse(
+                                                                    //                                         //               "0") *
+                                                                    //                                         //               int
+                                                                    //                                         //                   .parse(
+                                                                    //                                         //                   selectedDenomination
+                                                                    //                                         //                       .toString()))
+                                                                    //                                         //               .toString();
+                                                                    //                                         //     }else {
+                                                                    //                                         //       _controllersamount[index]
+                                                                    //                                         //           .text =
+                                                                    //                                         //           (int
+                                                                    //                                         //               .parse(
+                                                                    //                                         //               text) *
+                                                                    //                                         //               int
+                                                                    //                                         //                   .parse(
+                                                                    //                                         //                   selectedDenomination
+                                                                    //                                         //                       .toString()))
+                                                                    //                                         //               .toString();
+                                                                    //                                         //     }
+                                                                    //                                         //     }
+                                                                    //                                         // });
+                                                                    //   },
+                                                                    //   // style: TextStyle(fontSize: 18.0),
+                                                                    // )
                                                                 ),
-                                                              );
-                                                            }),
+                                                            ),
+
+                                                            SizedBox(height: 20,width: 20,),
+                                                            Expanded(
+                                                              flex:1,
+                                                              child: Container(
+                                                                  width: MediaQuery.of(context).size.width,
+                                                                  height: 30,
+                                                                  alignment: Alignment.centerLeft,
+                                                                  padding: EdgeInsets.symmetric(horizontal: 10.0,vertical: 2),
+                                                                  decoration: BoxDecoration(
+                                                                      color: Color(0xffF1F0F6),
+                                                                      borderRadius: BorderRadius.all(Radius.circular(8.0))
+                                                                  ),
+                                                                  child: TextFormField(
+                                                                    controller: _controllers[index],
+                                                                    keyboardType: TextInputType.number,
+                                                                    decoration: InputDecoration(
+                                                                        hintText: 'Count',
+                                                                        labelStyle: TextStyle(color: Colors.black,
+                                                                            fontWeight: FontWeight.w400,fontSize: 10),
+                                                                        hintStyle: TextStyle(
+                                                                            color: Colors.black,
+                                                                            fontWeight: FontWeight.w400,fontSize: 10),
+                                                                        border: InputBorder.none),
+                                                                    onChanged: (text) {
+                                                                      // setState(() {
+                                                                      //   if (selectedDenomination != "Select Denomination") {
+                                                                      //     if(text.isEmpty){
+                                                                      //       _controllersamount[index]
+                                                                      //           .text =
+                                                                      //           (int
+                                                                      //               .parse(
+                                                                      //               "0") *
+                                                                      //               int
+                                                                      //                   .parse(
+                                                                      //                   selectedDenomination
+                                                                      //                       .toString()))
+                                                                      //               .toString();
+                                                                      //     }else {
+                                                                      //       _controllersamount[index]
+                                                                      //           .text =
+                                                                      //           (int
+                                                                      //               .parse(
+                                                                      //               text) *
+                                                                      //               int
+                                                                      //                   .parse(
+                                                                      //                   selectedDenomination
+                                                                      //                       .toString()))
+                                                                      //               .toString();
+                                                                      //     }
+                                                                      //     }
+                                                                      // });
+                                                                    },
+                                                                    style: TextStyle(fontSize: 10.0),
+                                                                  )
+                                                              ),
+                                                            ),
+                                                            SizedBox(height: 20,width: 10,),
+                                                            SizedBox(height: 20,width: 20,
+                                                              child: InkWell(
+                                                                child: Container(
+                                                                  decoration: BoxDecoration(
+                                                                    shape: BoxShape.circle,
+                                                                    color: Colors.green,
+                                                                  ),
+                                                                  alignment: Alignment.center,
+                                                                  child: Icon(Icons.add,color:Colors.white,size: 15,),
+                                                                ),
+                                                                onTap: (){
+                                                                  String firstrs="0";
+                                                                  String secondrs="0";
+                                                                  String thirdrs="0";
+                                                                  String fourrs="0";
+                                                                  String fivers="0";
+                                                                  if(selectedDenomination=="10"){
+                                                                    firstrs=_controllers[index].text.toString();
+                                                                  }else if(selectedDenomination=="20"){
+                                                                    secondrs=_controllers[index].text.toString();
+                                                                  }else if(selectedDenomination=="50"){
+                                                                    thirdrs=_controllers[index].text.toString();
+                                                                  }else if(selectedDenomination=="100"){
+                                                                    fourrs=_controllers[index].text.toString();
+                                                                  }else if(selectedDenomination=="500"){
+                                                                    fivers=_controllers[index].text.toString();
+                                                                  }
+                                                                  AddBagAmount("${checklist[index].name}", firstrs, secondrs, thirdrs, fourrs, fivers,  (int.tryParse(selectedDenomination.toString())! *
+                                                                      int.tryParse(_controllers[index].text.toString())!)
+                                                                      .toString(), "${widget.order_id}");
+
+                                                                  setState(() {
+                                                                    _controllers[index].text = "";
+                                                                    _controllersamount[index].text = "";
+
+                                                                  });
+                                                                },
+                                                              )
+                                                            )
+                                                          ],
+                                                        ),
+
                                                       ],
                                                     ),
                                                   ),
-                                                  if (_cashDetails.isNotEmpty)
+                                                  if (_bag.isNotEmpty )
                                                     Container(
-                                                      width:
-                                                          MediaQuery.of(context)
-                                                              .size
-                                                              .width,
+                                                      width: MediaQuery.of(context).size.width,
                                                       height: 40,
-                                                      margin:
-                                                          EdgeInsets.all(10.0),
-                                                      alignment:
-                                                          Alignment.centerLeft,
-                                                      padding:
-                                                          EdgeInsets.symmetric(
-                                                              horizontal: 10.0),
+                                                      margin: EdgeInsets.all(10.0),
+                                                      alignment: Alignment.centerLeft,
+                                                      padding: EdgeInsets.symmetric(horizontal: 10.0),
                                                       decoration: BoxDecoration(
-                                                          color:
-                                                              Color(0xffF1F0F6),
-                                                          borderRadius:
-                                                              BorderRadius.all(
-                                                                  Radius
-                                                                      .circular(
-                                                                          8.0))),
+                                                          color: Color(0xffF1F0F6),
+                                                          borderRadius: BorderRadius.all(
+                                                              Radius.circular(8.0))),
                                                       child: Row(
                                                         children: [
                                                           Text(
-                                                            "${calculateTotalAmount(_bag[index].data ?? []).toInt()}",
-                                                            // "",
+                                                            "${amount}", // "",
                                                             style: TextStyle(
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w400),
-                                                          ),
+                                                                fontWeight: FontWeight.w400),),
                                                           Spacer(),
                                                           Text(
                                                             "Total",
                                                             style: TextStyle(
                                                                 fontWeight:
-                                                                    FontWeight
-                                                                        .w600),
+                                                                FontWeight
+                                                                    .w600),
                                                           ),
                                                         ],
                                                       ),
@@ -1113,7 +961,7 @@ class _EditDeliveryPageState extends State<EditDeliveryPage> {
                                 decoration: BoxDecoration(
                                     color: Color(0xffF1F0F6),
                                     borderRadius:
-                                        BorderRadius.all(Radius.circular(8.0))),
+                                    BorderRadius.all(Radius.circular(8.0))),
                                 child: Row(
                                   children: [
                                     Text(
@@ -1137,7 +985,7 @@ class _EditDeliveryPageState extends State<EditDeliveryPage> {
                               alignment: Alignment.bottomCenter,
                               decoration: const BoxDecoration(
                                   borderRadius:
-                                      BorderRadius.all(Radius.circular(5.0)),
+                                  BorderRadius.all(Radius.circular(5.0)),
                                   color: Color(0xff25476a)),
                               // child: _isPageLoading ? Center(
                               //   child: CircularProgressIndicator(),
@@ -1151,11 +999,12 @@ class _EditDeliveryPageState extends State<EditDeliveryPage> {
                                   onPressed: () {
                                     if (finaltotolAmount(_bag ?? []).toInt() ==
                                         int.parse(widget.amount)) {
+                                      AddAmount(_bag);
                                       Navigator.of(context).push(
                                           MaterialPageRoute(
                                               builder: (context) =>
                                                   DeliveryViewPage(
-                                                    bagValue: "${_bag.fold("", (previousValue, element) => previousValue+" "+element.bagName.toString())}",
+                                                    bagValue: "${_bag.fold("",(previousValue, element) =>  previousValue+","+element.name.toString())}",
                                                     totalValue: "${finaltotolAmount(_bag ?? []).toInt()}",
                                                     orderId: widget.order_id,
                                                     user_id: user_id,
@@ -1181,6 +1030,7 @@ class _EditDeliveryPageState extends State<EditDeliveryPage> {
                           ],
                         ),
                       )
+
                     else
                       Container(),
                   ],

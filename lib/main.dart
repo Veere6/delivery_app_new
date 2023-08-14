@@ -218,13 +218,13 @@ class _HomeState extends State<Home> {
     _isPageLoading = true;
     _loginModel = await Service.LoginCredentials(email.text, password.text);
 
-    if(_loginModel.status == true){
+    if(_loginModel.roles != null){
       _isPageLoading = false;
       preferences.setBool("islogin", true);
-      preferences.setString("user_id",_loginModel.body?.userId ?? "0");
-      preferences.setString("name",_loginModel.body?.name ?? "dummy");
+      preferences.setString("user_id",_loginModel.id.toString() ?? "0");
+      preferences.setString("name",_loginModel.name ?? "dummy");
       Fluttertoast.showToast(
-          msg: _loginModel.msg.toString(),
+          msg: "Login successfully",
           toastLength: Toast.LENGTH_SHORT);
 
       Navigator.of(context).pushReplacement(
@@ -232,9 +232,8 @@ class _HomeState extends State<Home> {
     }else{
       _isPageLoading = false;
       Fluttertoast.showToast(
-          msg: _loginModel.msg.toString(),
+          msg: "Login failed",
           toastLength: Toast.LENGTH_SHORT);
-      print("objectdjsh"+ _loginModel.msg.toString());
     }
   }
 

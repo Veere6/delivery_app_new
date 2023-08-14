@@ -1,3 +1,4 @@
+import 'package:delivery_app/CommonMethod/LoaderDialog.dart';
 import 'package:delivery_app/Models/OrderDeliverModel.dart';
 import 'package:delivery_app/Services/Services.dart';
 import 'package:delivery_app/View/HomePage.dart';
@@ -47,31 +48,36 @@ class _DeliveryState extends State<DeliveryViewPage> {
       print("zfsdghfagsgdf ${e}");
     }
   }
-
+  bool isloading=false;
   Future<void> OrderDeliver() async {
+    LoaderDialog.showLoader(context);
+    setState(() {
+      isloading=true;
+    });
     _orderDeliverModel = await Service.OrderDeliver("${widget.user_id}", widget.orderId, _documentImage!);
-
     if(_orderDeliverModel.status == true){
-
-      Fluttertoast.showToast(msg: _orderDeliverModel.msg.toString(),
-          toastLength: Toast.LENGTH_SHORT);
+      Fluttertoast.showToast(msg: _orderDeliverModel.message.toString(), toastLength: Toast.LENGTH_SHORT);
+      LoaderDialog.dismissLoader(context);
       Navigator.pushAndRemoveUntil<dynamic>(
         context,
         MaterialPageRoute<dynamic>(
           builder: (BuildContext context) => HomePage(),
-        ),
-            (route) => false,//if you want to disable back feature set to false
+        ),(route) => false,//if you want to disable back feature set to false
       );
     }else {
-      Fluttertoast.showToast(msg: _orderDeliverModel.msg.toString(),
+      LoaderDialog.dismissLoader(context);
+      Fluttertoast.showToast(msg: _orderDeliverModel.error.toString(),
           toastLength: Toast.LENGTH_SHORT);
-
     }
+    setState(() {
+      isloading=false;
+    });
   }
 
 
   @override
   void initState() {
+    print(widget.bagValue);
     initBackgroundFetch();
   }
 
@@ -109,6 +115,9 @@ class _DeliveryState extends State<DeliveryViewPage> {
 
   @override
   Widget build(BuildContext context) {
+    List value = widget.bagValue.split(",");
+    String valuestring=value.toSet().toList().fold("",(previousValue, element) =>  "${previousValue},${element}").replaceAll(","," ");
+
     return Scaffold(
       appBar: null,
       body: SafeArea(
@@ -180,7 +189,7 @@ class _DeliveryState extends State<DeliveryViewPage> {
                                     Text("Bag",
                                       style: TextStyle(fontWeight: FontWeight.w600),),
                                     Spacer(),
-                                    Text("${widget.bagValue}",style: TextStyle(
+                                    Text("${valuestring}",style: TextStyle(
                                     ),)
                                   ],
                                 ),
@@ -378,7 +387,9 @@ class _DeliveryState extends State<DeliveryViewPage> {
                           highlightColor: Colors.transparent,
                           splashColor: Colors.transparent,
                           onPressed: () {
-                            OrderDeliver();
+                            if(isloading==false) {
+                              OrderDeliver();
+                            }
                             // showDialog(
                             //     context: context,
                             //     builder: (context){

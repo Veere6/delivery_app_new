@@ -1,101 +1,53 @@
 // To parse this JSON data, do
 //
-//     final getBagAmountModel = getBagAmountModelFromJson(jsonString);
+//     final bagDetailList = bagDetailListFromJson(jsonString);
 
 import 'dart:convert';
 
-GetBagAmountModel getBagAmountModelFromJson(String str) => GetBagAmountModel.fromJson(json.decode(str));
+List<BagDetailList> bagDetailListFromJson(String str) => List<BagDetailList>.from(json.decode(str).map((x) => BagDetailList.fromJson(x)));
 
-String getBagAmountModelToJson(GetBagAmountModel data) => json.encode(data.toJson());
+String bagDetailListToJson(List<BagDetailList> data) => json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
 
-class GetBagAmountModel {
-  final bool? status;
-  final String? msg;
-  final List<BagsBody>? body;
+class BagDetailList {
+  String? name;
+  int? the10Rs;
+  int? the20Rs;
+  int? the50Rs;
+  int? the100Rs;
+  int? the500Rs;
+  int? amount;
+  int? order;
 
-  GetBagAmountModel({
-    this.status,
-    this.msg,
-    this.body,
-  });
-
-  factory GetBagAmountModel.fromJson(Map<String, dynamic> json) => GetBagAmountModel(
-    status: json["status"],
-    msg: json["msg"],
-    body: json["body"] == "" ? [] : List<BagsBody>.from(json["body"]!.map((x) => BagsBody.fromJson(x))),
-  );
-
-  Map<String, dynamic> toJson() => {
-    "status": status,
-    "msg": msg,
-    "body": body == "" ? [] : List<dynamic>.from(body!.map((x) => x.toJson())),
-  };
-}
-
-class BagsBody {
-  final String? bagId;
-  final String? bagName;
-  final String? bageCode;
-  final String? qrImage;
-  final List<BagAmount>? data;
-
-  BagsBody({
-    this.bagId,
-    this.bagName,
-    this.bageCode,
-    this.qrImage,
-    this.data,
-  });
-
-  factory BagsBody.fromJson(Map<String, dynamic> json) => BagsBody(
-    bagId: json["bag_id"],
-    bagName: json["bag_name"],
-    bageCode: json["bage_code"],
-    qrImage: json["qr_image"],
-    data: json["data"] == null ? [] : List<BagAmount>.from(json["data"]!.map((x) => BagAmount.fromJson(x))),
-  );
-
-  Map<String, dynamic> toJson() => {
-    "bag_id": bagId,
-    "bag_name": bagName,
-    "bage_code": bageCode,
-    "qr_image": qrImage,
-    "data": data == null ? [] : List<dynamic>.from(data!.map((x) => x.toJson())),
-  };
-}
-
-class BagAmount {
-  final String? bagLogId;
-  final String? denomination;
-  final String? count;
-  final String? amount;
-  final DateTime? date;
-  final String? time;
-
-  BagAmount({
-    this.bagLogId,
-    this.denomination,
-    this.count,
+  BagDetailList({
+    this.name,
+    this.the10Rs,
+    this.the20Rs,
+    this.the50Rs,
+    this.the100Rs,
+    this.the500Rs,
     this.amount,
-    this.date,
-    this.time,
+    this.order
   });
 
-  factory BagAmount.fromJson(Map<String, dynamic> json) => BagAmount(
-    bagLogId: json["bag_log_id"],
-    denomination: json["denomination"],
-    count: json["count"],
+  factory BagDetailList.fromJson(Map<String, dynamic> json) => BagDetailList(
+    name: json["name"],
+    the10Rs: json["10rs"],
+    the20Rs: json["20rs"],
+    the50Rs: json["50rs"],
+    the100Rs: json["100rs"],
+    the500Rs: json["500rs"],
     amount: json["amount"],
-    date: json["date"] == null ? null : DateTime.parse(json["date"]),
-    time: json["time"],
+    order: json["order"]
   );
 
   Map<String, dynamic> toJson() => {
-    "bag_log_id": bagLogId,
-    "denomination": denomination,
-    "count": count,
+    "name": name,
+    "10rs": the10Rs,
+    "20rs": the20Rs,
+    "50rs": the50Rs,
+    "100rs": the100Rs,
+    "500rs": the500Rs,
     "amount": amount,
-    "date": "${date!.year.toString().padLeft(4, '0')}-${date!.month.toString().padLeft(2, '0')}-${date!.day.toString().padLeft(2, '0')}",
-    "time": time,
+    "order": order
   };
 }

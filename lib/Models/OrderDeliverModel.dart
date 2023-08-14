@@ -4,36 +4,30 @@
 
 import 'dart:convert';
 
-OrderDeliverModel orderDeliverModelFromJson(String str) {
-  final jsonData = json.decode(str);
-  return OrderDeliverModel.fromJson(jsonData);
-}
+OrderDeliverModel orderDeliverModelFromJson(String str) => OrderDeliverModel.fromJson(json.decode(str));
 
-String orderDeliverModelToJson(OrderDeliverModel data) {
-  final dyn = data.toJson();
-  return json.encode(dyn);
-}
+String orderDeliverModelToJson(OrderDeliverModel data) => json.encode(data.toJson());
 
 class OrderDeliverModel {
   bool? status;
-  String? msg;
-  String? body;
+  String? message;
+  String? error;
 
   OrderDeliverModel({
     this.status,
-    this.msg,
-    this.body,
+    this.message,
+    this.error,
   });
 
-  factory OrderDeliverModel.fromJson(Map<String, dynamic> json) => new OrderDeliverModel(
-    status: json["status"],
-    msg: json["msg"],
-    body: json["body"],
+  factory OrderDeliverModel.fromJson(Map<String, dynamic> json) => OrderDeliverModel(
+    status: json["status"]==null ? null:json["status"],
+    message: json["message"]==null ? null:json["message"],
+    error: json["error"]==null ? null:json["error"],
   );
 
   Map<String, dynamic> toJson() => {
     "status": status,
-    "msg": msg,
-    "body": body,
+    "message": message,
+    "error": error,
   };
 }
