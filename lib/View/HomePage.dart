@@ -1,8 +1,11 @@
+import 'package:delivery_app/CommonMethod/BgService.dart';
 import 'package:delivery_app/CommonMethod/CommonColors.dart';
 import 'package:delivery_app/Models/OrderListModel.dart';
 import 'package:delivery_app/Services/Services.dart';
 import 'package:delivery_app/View/EditDeliveryPage.dart';
+import 'package:delivery_app/main.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
@@ -15,11 +18,12 @@ class _MyStatefulWidgetPageState extends State<HomePage> {
   List<OrderListModel> _orderList = [];
   late OrderListModel _orderListModel;
   bool _isPageLoading = false;
-
+  String username="";
   late SharedPreferences preferences;
   Future<void> GetOrderList() async {
     _isPageLoading = true;
     preferences = await SharedPreferences.getInstance();
+    username=preferences.getString("name") ?? "";
     String user_id = preferences.getString("user_id") ?? "";
     _orderList = await Service.DeliveryOrderList("$user_id");
     // if(_orderListModel.status == true){
@@ -35,8 +39,12 @@ class _MyStatefulWidgetPageState extends State<HomePage> {
   });
   }
 
+
   void logOut() async {
+    BackgroundService.stopService();
     preferences.clear();
+    Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => Home()));
   }
 
 
@@ -84,10 +92,17 @@ class _MyStatefulWidgetPageState extends State<HomePage> {
                         Spacer(),
                         InkWell(
                           onTap: (){
-                            logOut();
+                            // logOut();
                           },
                           child: Image.asset("images/manu.png",
                           height: 20.0,),
+                        ),
+                        SizedBox(width:10),
+                        InkWell(
+                          onTap: (){
+                            logOut();
+                          },
+                          child: Icon(Icons.logout,size: 35,color: Colors.white,)
                         ),
                       ],
                     )
@@ -96,14 +111,33 @@ class _MyStatefulWidgetPageState extends State<HomePage> {
                   SizedBox(height: 10.0),
                   Container(
                     padding: EdgeInsets.all(16.0),
-                    child: Text(
-                      'Today`s Deliveries',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 24.0,
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    child:  Row(
+                      children: [
+                        Text(
+                          'Today`s Deliveries',
+                          // textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 24.0,
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.left,
+                        ),
+                        Text(
+                          ' (${username})',
+                          // textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 18.0,
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.left,
+                        ),
+                      ],
                     ),
                   ),
                   _isPageLoading ?  Center(
