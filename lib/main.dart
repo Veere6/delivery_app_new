@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:ui';
 import 'package:delivery_app/CommonMethod/CommonColors.dart';
@@ -17,22 +18,27 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 
-void sendLocationToBackend(Position position) async {
+void sendLocationToBackend(Position position, userID) async {
   // TODO: Send the location to the backend.
-  var url = Uri.parse('https://cws.in.net/delivery_service/api/Order');
-  var response = await http.post(url, body: {
-    'flag':'add_lat_long',
-    'delivery_boy_id':'6',
-    'latitude': position.latitude.toString(),
-    'longitude': position.longitude.toString(),
-  });
-
+  SharedPreferences preferences = await SharedPreferences.getInstance();
+  String uId = preferences.getString("user_id") ?? "3";
+  var url = Uri.parse('http://netra.161cloud.in/api/ulocation?delivery_admin=$uId');
+  var response = await http.post(url, headers: {
+    'Authorization': "Bearer testdd",
+    'Content-Type': 'application/json'
+  }, body: jsonEncode({
+    'l1': position.latitude.toString(),
+    'l2': position.longitude.toString(),
+  }) );
+  print(response.request);
+  print('latitude: ${position.latitude.toString()}');
+  print('longitude: ${position.longitude.toString()}');
   print('Response status: ${response.statusCode}');
   print('Response body: ${response.body}');
   // print('Sending location: ${position.latitude}, ${position.longitude}');
 }
 
-void initBackgroundFetch() {
+void initBackgroundFetch(userId) {
 //
 //   BackgroundLocation.getLocationUpdates((location) {
 //     sendLocationToBackend(location);
@@ -43,9 +49,9 @@ void initBackgroundFetch() {
     Geolocator.checkPermission().then((permission)async {
       if (permission == LocationPermission.always || permission == LocationPermission.whileInUse) {
         final currentLocation = await Geolocator.getCurrentPosition();
-
+        print(currentLocation);
         // Send the current location to the backend immediately.
-        sendLocationToBackend(currentLocation);
+        sendLocationToBackend(currentLocation,userId);
 
         // Set up a timer to send the location to the backend every minute.
         // Timer.periodic(Duration(minutes: 1), (timer) async {
@@ -71,10 +77,11 @@ Future<void> onStart(ServiceInstance service) async {
   FlutterLocalNotificationsPlugin();
 
   // bring to foreground
-  Timer.periodic(const Duration(minutes: 1), (timer) async {
+  Timer.periodic(const Duration(seconds: 10), (timer) async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
     if (service is AndroidServiceInstance) {
       if (await service.isForegroundService()) {
-        initBackgroundFetch();
+        initBackgroundFetch(preferences.getString("user_id"));
         flutterLocalNotificationsPlugin.show(
           notificationId,
           'App is running in background',
@@ -154,6 +161,7 @@ Future<void> initializeService() async {
 
   service.startService();
 }
+
 Future<bool> onIosBackground(ServiceInstance service) async {
   WidgetsFlutterBinding.ensureInitialized();
   DartPluginRegistrant.ensureInitialized();

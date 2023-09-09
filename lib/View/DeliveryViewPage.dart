@@ -33,7 +33,8 @@ class _DeliveryState extends State<DeliveryViewPage> {
       final _docImage;
       _docImage = await ImagePicker().
       pickImage(
-          source: ImageSource.camera,);
+          source: ImageSource.camera,
+      imageQuality: 50);
 
       setState((){
         if(_docImage != null){
